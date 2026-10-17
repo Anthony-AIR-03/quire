@@ -1,0 +1,47 @@
+# Personal deployment (personal branch only). Standalone: runs the published
+# image, nothing is built on the server. Copy this file and update.sh into the
+# deploy directory next to a filled-in .env (see .env.example), then:
+#   docker compose up -d
+# update.sh (from cron) pulls a newer image and recreates the app only if it changed.
+# No host port: the reverse proxy reaches the app over the shared external
+# Docker network as http://quire:3000. Postgres stays on the private default network.
+name: quire
+
+services:
+  app:
+    image: ghcr.io/anthony-air-03/quire:personal
+    container_name: quire
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://quire:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/quire
+    networks:
+      - default
+      - npm
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    container_name: quire-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quire
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: quire
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quire -d quire"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+
+networks:
+  npm:
+    external: true
