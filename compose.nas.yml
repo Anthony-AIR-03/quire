@@ -1,0 +1,18 @@
+# Personal deployment override (personal branch only).
+#   docker compose -f compose.yml -f compose.nas.yml up -d --build
+# No host port: the reverse proxy reaches the app over the shared external
+# Docker network as http://quire:3000. Postgres stays on the private default network.
+services:
+  app:
+    container_name: quire
+    ports: !reset []
+    networks:
+      - default
+      - npm
+
+  db:
+    container_name: quire-db
+
+networks:
+  npm:
+    external: true

@@ -1,0 +1,54 @@
+# Personal deployment (personal branch only). Runs on a self-hosted runner
+# labelled "quire". The deploy directory comes from the repo Variable
+# NAS_DEPLOY_DIR and must already hold a filled-in .env (never synced).
+name: Deploy to NAS
+
+on:
+  push:
+    branches: [personal]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-nas
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, quire]
+    env:
+      DEPLOY_DIR: ${{ vars.NAS_DEPLOY_DIR }}
+      COMPOSE: docker compose -f compose.yml -f compose.nas.yml
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check deploy dir
+        run: |
+          test -n "$DEPLOY_DIR" || { echo "Set the repo Variable NAS_DEPLOY_DIR."; exit 1; }
+          test -f "$DEPLOY_DIR/.env" || { echo "$DEPLOY_DIR/.env is missing (copy .env.example and fill it in)."; exit 1; }
+
+      - name: Sync
+        run: |
+          rsync -a --delete --exclude .git --exclude .env "$GITHUB_WORKSPACE"/ "$DEPLOY_DIR"/
+          # Restrictive host umask: make the tree readable for the image build.
+          find "$DEPLOY_DIR" -path "$DEPLOY_DIR/.env" -prune -o -type d -exec chmod a+rx {} +
+          find "$DEPLOY_DIR" -path "$DEPLOY_DIR/.env" -prune -o -type f -exec chmod a+r {} +
+          chmod 600 "$DEPLOY_DIR/.env"
+
+      - name: Build and start
+        working-directory: ${{ vars.NAS_DEPLOY_DIR }}
+        run: $COMPOSE up -d --build --remove-orphans
+
+      - name: Wait for healthy
+        run: |
+          for i in $(seq 1 40); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' quire 2>/dev/null || echo missing)
+            echo "quire: $status"
+            [ "$status" = healthy ] && exit 0
+            sleep 3
+          done
+          docker logs --tail 80 quire
+          exit 1
+
+      - name: Prune old images
+        if: success()
+        run: docker image prune -f
