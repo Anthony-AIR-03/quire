@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Password hashing is deliberately slow.
@@ -106,6 +107,27 @@ describe("owner gate", () => {
     const cookie = (headers.get("set-cookie") ?? "").split(";")[0];
     const request = new Request("http://quire.test/", { headers: { cookie } });
     expect(await ownerGate(request, "/", "router")).toBeNull();
+  });
+
+  it("closes the gate again after sign-out", async () => {
+    const { auth, authReady } = await load();
+    await authReady();
+    const { ownerGate } = await import("../src/lib/owner");
+    const { headers } = await auth.api.signInEmail({
+      body: { email: "owner@example.com", password: "a-long-owner-password" },
+      returnHeaders: true,
+    });
+    const cookie = (headers.get("set-cookie") ?? "").split(";")[0];
+    await auth.api.signOut({ headers: new Headers({ cookie }) });
+    const request = new Request("http://quire.test/", { headers: { cookie } });
+    expect((await ownerGate(request, "/", "router"))?.status).toBe(302);
+  });
+
+  it("offers sign-out on the desk, not a sign-in link", () => {
+    const desk = readFileSync("src/routes/index.tsx", "utf8");
+    expect(desk).toMatch(/authClient\.signOut\(\)/);
+    expect(desk).toMatch(/\{signOutLabel\}/);
+    expect(desk).not.toMatch(/to="\/login"/);
   });
 
   it("is not looser than a cookie someone made up", async () => {
