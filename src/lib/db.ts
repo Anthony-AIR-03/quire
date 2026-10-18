@@ -43,6 +43,18 @@ create table if not exists issues (
 );
 `;
 
+const createBookmarks = `
+create table if not exists bookmarks (
+  reader_id text not null,
+  item_id text not null,
+  sheet integer not null,
+  block integer,
+  block_start text,
+  saved_at timestamptz not null,
+  primary key (reader_id, item_id)
+);
+`;
+
 const schema = [
   createClips,
   addUnderstanding,
@@ -50,6 +62,7 @@ const schema = [
   addRelatedReporting,
   addSourceHeadline,
   createIssues,
+  createBookmarks,
 ];
 
 /** Postgres pool size. One reader; a few connections cover the parallel loads. */
