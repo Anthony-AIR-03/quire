@@ -88,13 +88,16 @@ export function formatKeepTiming(timing: KeepTiming): string {
   ].join(" · ") + (host ? ` (${host})` : "");
 }
 
+/** Wall time spent in fn: calls that overlap (both searches at once) count once. */
 function timed<A extends unknown[], R>(fn: (...args: A) => Promise<R>, add: (ms: number) => void) {
+  let running = 0;
+  let since = 0;
   return async (...args: A): Promise<R> => {
-    const start = performance.now();
+    if (running++ === 0) since = performance.now();
     try {
       return await fn(...args);
     } finally {
-      add(performance.now() - start);
+      if (--running === 0) add(performance.now() - since);
     }
   };
 }
