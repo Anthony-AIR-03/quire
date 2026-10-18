@@ -54,7 +54,50 @@ export type SaveOptions = {
   labelStance?: RelatedStanceFn;
   readHeadline?: (input: { url: string }) => Promise<SourceHeadlineFound>;
   readSource?: (input: { url: string }) => Promise<{ found: SourceHeadlineFound; source: ClaimSource }>;
+  /** Called once per Keep with how long each step took. */
+  onTiming?: (timing: KeepTiming) => void;
 };
+
+/** Milliseconds per Keep step; search strings, search, and judge are the parts of the rail. */
+export type KeepTiming = {
+  url: string;
+  source: number;
+  understand: number;
+  searchStrings: number;
+  search: number;
+  judge: number;
+  total: number;
+};
+
+/** One log line, e.g. "keep 14.2s · source 0.8s · understand 5.1s · ... (example.com)". */
+export function formatKeepTiming(timing: KeepTiming): string {
+  const s = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
+  let host = "";
+  try {
+    host = new URL(timing.url).hostname;
+  } catch {
+    // Timing still logs without a host.
+  }
+  return [
+    `keep ${s(timing.total)}`,
+    `source ${s(timing.source)}`,
+    `understand ${s(timing.understand)}`,
+    `search strings ${s(timing.searchStrings)}`,
+    `search ${s(timing.search)}`,
+    `judge ${s(timing.judge)}`,
+  ].join(" · ") + (host ? ` (${host})` : "");
+}
+
+function timed<A extends unknown[], R>(fn: (...args: A) => Promise<R>, add: (ms: number) => void) {
+  return async (...args: A): Promise<R> => {
+    const start = performance.now();
+    try {
+      return await fn(...args);
+    } finally {
+      add(performance.now() - start);
+    }
+  };
+}
 
 /** Longer than any real article URL; keeps junk out of the store. */
 export const KEEP_URL_MAX = 2048;
@@ -89,12 +132,31 @@ export async function saveClip(
     throw new Error(keepNeedsUrl);
   }
 
+  const started = performance.now();
+  const timing: KeepTiming = {
+    url,
+    source: 0,
+    understand: 0,
+    searchStrings: 0,
+    search: 0,
+    judge: 0,
+    total: 0,
+  };
+  let mark = started;
+  const lap = () => {
+    const now = performance.now();
+    const ms = now - mark;
+    mark = now;
+    return ms;
+  };
+
   const clip = await store.insert({
     id: newId(),
     url,
     savedAt: new Date().toISOString(),
     ...emptyClipFields(),
   });
+  lap();
 
   let headline: SourceHeadlineRecord | null = null;
   let source: ClaimSource | undefined;
@@ -119,6 +181,7 @@ export async function saveClip(
       // Keep stands. The fail still returns on the clip below.
     }
   }
+  timing.source = lap();
 
   const understand = options?.understand ?? runGrokUnderstanding;
   let record: UnderstandingRecord | null = null;
@@ -135,10 +198,17 @@ export async function saveClip(
       // Keep stands. An ok characterization is not rewritten as fail.
     }
   }
+  timing.understand = lap();
 
-  const searchPages = options?.searchPages ?? resolveSearchPages();
-  const searchStrings = options?.searchStrings ?? runGrokRelatedQueries;
-  const judge = options?.judge ?? options?.labelStance ?? runGrokRelatedStance;
+  const searchPages = timed(options?.searchPages ?? resolveSearchPages(), (ms) => {
+    timing.search += ms;
+  });
+  const searchStrings = timed(options?.searchStrings ?? runGrokRelatedQueries, (ms) => {
+    timing.searchStrings += ms;
+  });
+  const judge = timed(options?.judge ?? options?.labelStance ?? runGrokRelatedStance, (ms) => {
+    timing.judge += ms;
+  });
   let related: RelatedRailRecord | null = null;
   try {
     related = await runRelatedReporting({
@@ -159,6 +229,9 @@ export async function saveClip(
       // Keep stands. The rail still returns on the clip below.
     }
   }
+
+  timing.total = performance.now() - started;
+  options?.onTiming?.(timing);
 
   const stored = await store.get(clip.id);
   if (!stored) {

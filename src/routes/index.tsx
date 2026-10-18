@@ -38,7 +38,7 @@ import {
   relatedVisible,
 } from "../lib/kept";
 import { authClient } from "../lib/auth-client";
-import { saveClip, type Clip } from "../lib/save";
+import { formatKeepTiming, saveClip, type Clip } from "../lib/save";
 import { chosenFromBoard, chosenPieces, defaultBindChoice, type BindChoice } from "../lib/select";
 import {
   clipStore,
@@ -64,6 +64,7 @@ const keepUrl = createServerFn({ method: "POST" })
     const store = await clipStore();
     const clip = await saveClip({ url: data.url }, store, {
       searchPages: resolveSearchPages(),
+      onTiming: (timing) => console.info(formatKeepTiming(timing)),
     });
     return { note: keptNote, clip };
   });
