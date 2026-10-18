@@ -127,14 +127,36 @@ export async function saveClip(
   store: ClipStore,
   options?: SaveOptions,
 ): Promise<Clip> {
+  return enrichClip(await keepClip(input, store), store, options);
+}
+
+/** The quick half of Keep: check the URL and persist the clip, nothing fetched yet. */
+export async function keepClip(input: { url: string }, store: ClipStore): Promise<Clip> {
   const url = input.url.trim();
   if (!url || url.length > KEEP_URL_MAX || !isPublicHttpUrl(url)) {
     throw new Error(keepNeedsUrl);
   }
+  return store.insert({
+    id: newId(),
+    url,
+    savedAt: new Date().toISOString(),
+    ...emptyClipFields(),
+  });
+}
 
+/**
+ * The slow half of Keep, for a clip keepClip persisted. Each step persists as
+ * it lands, so a desk that reloads meanwhile sees the card fill in; the
+ * related rail is written last.
+ */
+export async function enrichClip(
+  clip: Clip,
+  store: ClipStore,
+  options?: SaveOptions,
+): Promise<Clip> {
   const started = performance.now();
   const timing: KeepTiming = {
-    url,
+    url: clip.url,
     source: 0,
     understand: 0,
     searchStrings: 0,
@@ -149,14 +171,6 @@ export async function saveClip(
     mark = now;
     return ms;
   };
-
-  const clip = await store.insert({
-    id: newId(),
-    url,
-    savedAt: new Date().toISOString(),
-    ...emptyClipFields(),
-  });
-  lap();
 
   let headline: SourceHeadlineRecord | null = null;
   let source: ClaimSource | undefined;
