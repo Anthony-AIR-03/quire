@@ -87,7 +87,7 @@ describe("Keep answers before reading", () => {
   it("answers the desk without waiting for enrichment", () => {
     const desk = readFileSync("src/routes/index.tsx", "utf8");
     expect(desk).toMatch(/await keepClip\(/);
-    expect(desk).toMatch(/void enrichClip\(/);
+    expect(desk).toMatch(/afterResponse\(\s*enrichClip\(/);
     expect(desk).not.toMatch(/await saveClip\(|await enrichClip\(/);
     expect(desk).toMatch(/router\.invalidate\(\), 2000/);
   });
