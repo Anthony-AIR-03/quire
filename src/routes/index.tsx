@@ -40,6 +40,7 @@ import {
   relatedRow,
   relatedVisible,
 } from "../lib/kept";
+import { afterResponse } from "../lib/after-response";
 import { authClient } from "../lib/auth-client";
 import { enrichClip, formatKeepTiming, keepClip, type Clip } from "../lib/save";
 import { chosenFromBoard, chosenPieces, defaultBindChoice, type BindChoice } from "../lib/select";
@@ -66,13 +67,15 @@ const keepUrl = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const store = await clipStore();
     const clip = await keepClip({ url: data.url }, store);
-    // Answer now; the card fills in while the desk polls. A long-running Node
-    // server finishes this; a host that freezes after the response leaves the
-    // card "stalled" (keepProgress) instead of hanging the request.
-    void enrichClip(clip, store, {
-      searchPages: resolveSearchPages(),
-      onTiming: (timing) => console.info(formatKeepTiming(timing)),
-    }).catch((error: unknown) => console.error("Keep enrichment failed", error));
+    // Answer now; the card fills in while the desk polls. afterResponse keeps
+    // the host from freezing the work once the answer is sent; if it is cut
+    // off anyway, the card shows "stalled" (keepProgress) instead of hanging.
+    afterResponse(
+      enrichClip(clip, store, {
+        searchPages: resolveSearchPages(),
+        onTiming: (timing) => console.info(formatKeepTiming(timing)),
+      }).catch((error: unknown) => console.error("Keep enrichment failed", error)),
+    );
     return { note: keptNote, clip };
   });
 
