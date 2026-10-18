@@ -115,10 +115,10 @@ describe("multi-source Read magazine", () => {
     expect(byHead["Watch the count"]?.treatment).toBe("screening");
     expect(byHead["A distant storm"]?.treatment).toBe("essay");
     expect(new Set(page.sequence.slice(1).map((sheet) => sheet.intent.treatment)).size).toBeGreaterThan(1);
+    // On screen every piece keeps the same page layout (dyslexia-friendly consistency);
+    // the treatment still steers the briefing and the print plan.
     const css = readFileSync("src/styles.css", "utf8");
-    expect(css).toMatch(/\[data-treatment="feature"\][\s\S]*font-size: clamp\(3\.5rem/);
-    expect(css).toMatch(/\[data-treatment="compact"\][\s\S]*font-size: clamp\(2\.2rem/);
-    expect(css).toMatch(/\[data-treatment="screening"\][\s\S]*font-size: clamp\(2\.2rem/);
+    expect(css).not.toMatch(/\[data-treatment=/);
   });
 
   it("clusters by topic, not hostname", () => {
@@ -145,7 +145,8 @@ describe("multi-source Read magazine", () => {
     });
     expect(covered.figure_fit).toBe("contain");
     const css = readFileSync("src/styles.css", "utf8");
-    expect(css).toMatch(/\.sheet-figure\.contain img \{[\s\S]*object-fit:\s*contain/);
+    expect(css).toMatch(/\.figure-frame img \{[\s\S]*object-fit:\s*contain/);
+    expect(css).not.toMatch(/object-fit:\s*cover/);
   });
 
   it("prints captions and credits only when source-owned, and never invents Take", () => {
@@ -172,10 +173,12 @@ describe("multi-source Read magazine", () => {
     expect(bare.sequence[0]?.figure?.caption).toBeUndefined();
     expect(bare.sequence[0]?.figure?.credit).toBeUndefined();
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    expect(read).toMatch(/figure\.caption \? <span>\{figure\.caption\}<\/span> : null/);
+    expect(read).toMatch(/figure\.caption \? <span>\{figure\.caption\} <\/span> : null/);
+    expect(read).toMatch(/figure\.credit \? <span className="credit">\{figure\.credit\}<\/span> : null/);
     expect(read).toMatch(/sheet\.take \?/);
+    // The take is labelled as Quire's own note, so it is never mistaken for the author's words.
+    expect(read).toMatch(/<h2>\{takeLabel\}<\/h2>/);
     expect(read).not.toMatch(/>Take</);
-    expect(read).not.toMatch(/takeLabel/);
   });
 
   it("uses pull quotes and subheads only when the source already has them", () => {
@@ -209,35 +212,33 @@ describe("multi-source Read magazine", () => {
     expect(page.sequence[0]?.colophon).toBe("Praia Daily · 1 September 2026");
     expect(page.sequence.find((sheet) => sheet.headline === "A distant storm")?.colophon).toBe("Hill Gazette");
     expect(pieceColophon(piece({ url: "https://example.com/x", role: "related", headline: "X" }))).toBe("");
+    expect(page.sequence[0]?.sourceLine).toBe("Praia Daily · 1 September 2026");
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    expect(read).toMatch(/sheet\.colophon \? <p className="colophon">\{sheet\.colophon\}<\/p> : null/);
-    expect(read).not.toMatch(/hostnameOf\(sheet/);
+    // The byline is the source's own publisher · date; it never falls back to the hostname.
+    expect(read).toMatch(/sheet\.sourceLine \? <p className="byline">\{sheet\.sourceLine\}<\/p> : null/);
+    expect(read).not.toMatch(/sourceLine \?\? host|colophon \?\? host/);
   });
 
-  it("keeps SI, related_reporting, and n of n off the sheet", () => {
+  it("keeps SI and related_reporting off the sheet, and page turning outside it", () => {
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    const article = read.slice(read.indexOf("<article"), read.lastIndexOf("</article>"));
+    const article = read.slice(read.indexOf("<article"), read.indexOf("</article>"));
     expect(article).not.toMatch(/related_reporting|More on this topic|getClipIntelligenceState|\/reliability/);
-    expect(article).not.toMatch(/n of n| of n|\{index \+ 1\}/);
-    expect(read).toMatch(/stage-turn/);
-    expect(read.indexOf("stage-chrome")).toBeLessThan(read.indexOf("stage-well"));
+    expect(read).toMatch(/<nav className="turn" aria-label="Turn the page">/);
+    expect(read.indexOf("</article>")).toBeLessThan(read.indexOf('className="turn"'));
   });
 
-  it("keeps pass-2 tokens, cloth + one sheet, Print in chrome, and one Design Intent", () => {
+  it("keeps the brand tokens, one sheet at a time, Print in the app bar, and one Design Intent", () => {
     const css = readFileSync("src/styles.css", "utf8");
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    const compositor = readFileSync("src/lib/print-compose.ts", "utf8");
     const page = composeIssue(multi);
     const plan = printPlan(multi);
-    expect(css).toMatch(/--paper: #faf7f1;/);
-    expect(css).toMatch(/--ink: #1c1814;/);
-    expect(css).toMatch(/--binding: #4a5c56;/);
-    expect(css).not.toMatch(/#F3EEE4|#f3eee4|#3D4A3A|#3d4a3a/i);
-    expect(compositor).not.toMatch(/243 \/ 255,\s*238 \/ 255,\s*228 \/ 255/);
-    expect(compositor).not.toMatch(/61 \/ 255,\s*74 \/ 255,\s*58 \/ 255/);
-    expect(css).toMatch(/\.sheet:hover \{[\s\S]*transform:\s*none/);
-    expect(read).toMatch(/className="stage"/);
-    expect(read).toMatch(/className="stage-print"/);
+    expect(css).toMatch(/--paper: #f7f2df;/);
+    expect(css).toMatch(/--ink: #22201b;/);
+    expect(css).toMatch(/--marigold: #f2b705;/);
+    expect(css).not.toMatch(/--binding|#faf7f1|#4a5c56/i);
+    expect(css).not.toMatch(/\.sheet:hover/);
+    expect(read).toMatch(/className="link-btn print"/);
+    expect(read.indexOf('className="link-btn print"')).toBeLessThan(read.indexOf("<article"));
     expect(read.match(/<article/g)?.length).toBe(1);
     expect(plan.intent).toEqual(page.intent);
     expect(plan.sheets.filter((sheet) => sheet.kind === "piece").map((sheet) => sheet.kind)).toHaveLength(

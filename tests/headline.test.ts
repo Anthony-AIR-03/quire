@@ -113,7 +113,7 @@ describe("source headline is extracted, not invented", () => {
     expect(headline).toMatch(/throw new Error\(`\$\{couldNotReadHeadline\} \(\$\{response\.status\}\)`\)/);
     expect(headline).toMatch(/if \(!response\.ok\) \{\s*throw new Error/);
     expect(headline).not.toMatch(/if \(response\.status === 403\)/);
-    expect(keep).toMatch(/<h2>\{pressLabel\}<\/h2>/);
+    expect(keep).toMatch(/<h2[^>]*>\{pressLabel\}<\/h2>/);
     expect(keep).not.toMatch(/to=["']\/press["']/);
   });
 });

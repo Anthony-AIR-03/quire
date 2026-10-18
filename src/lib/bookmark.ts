@@ -17,6 +17,8 @@ export type BookmarkStore = {
   get: (readerId: string, itemId: string) => Promise<Bookmark | null>;
   set: (readerId: string, itemId: string, place: SavedPlace) => Promise<Bookmark>;
   removeItem: (itemId: string) => Promise<void>;
+  /** Every bookmark this reader has, for showing reading progress in the Press. */
+  forReader: (readerId: string) => Promise<Bookmark[]>;
 };
 
 function bookmarkFromRow(row: Record<string, unknown>): Bookmark {
@@ -56,6 +58,14 @@ export async function bookmarkStore(): Promise<BookmarkStore> {
         [readerId, itemId, sheet, block, start, savedAt],
       );
       return { readerId, itemId, sheet, block, start, savedAt };
+    },
+    async forReader(readerId) {
+      if (!readerId) return [];
+      const { rows } = await db.query(
+        "select reader_id, item_id, sheet, block, block_start, saved_at from bookmarks where reader_id = $1",
+        [readerId],
+      );
+      return rows.map(bookmarkFromRow);
     },
     async removeItem(itemId) {
       if (!itemId) return;

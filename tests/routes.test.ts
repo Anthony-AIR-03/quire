@@ -31,18 +31,14 @@ describe("PR 4 surface", () => {
     expect(read).toMatch(/composeIssue/);
     expect(read).toMatch(/issueFromKeptWords/);
     expect(read).toMatch(/clipStore/);
-    expect(read).toMatch(/data-sheet=\{kind\}/);
-    expect(read).toMatch(/sheet-cover/);
-    expect(read).toMatch(/sheet-contents/);
+    expect(read).toMatch(/data-sheet=\{isFront \? "front" : "piece"\}/);
+    expect(read).toMatch(/sheet-front/);
     expect(read).toMatch(/sheet-piece/);
-    expect(read).toMatch(/page\.cover\.kicker \? <p className="kicker">\{page\.cover\.kicker\}<\/p> : null/);
-    expect(read).toMatch(/page\.contents\.kicker/);
-    expect(read).not.toMatch(/takeLabel/);
+    expect(read).toMatch(/page\.contents\.rows/);
     expect(read).not.toMatch(/className="opener"/);
     expect(read).not.toMatch(/className="aside"/);
-    expect(read).not.toMatch(/TL;DR|tl;dr|Press/);
+    expect(read).not.toMatch(/TL;DR|tl;dr|\bPress\b/);
   });
-
   it("does not bind Keep to an owner session", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     const save = readFileSync("src/lib/save.ts", "utf8");
@@ -90,59 +86,54 @@ describe("kept card does not leak to the source", () => {
     expect(keep).not.toMatch(/host && topic/);
   });
 
-  it("puts the board mark on the keep card, Opinion not Comment, not a loud COMMENT pill", () => {
+  it("puts the board mark in the keep card's meta line, Opinion not Comment, never a loud pill", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     const css = readFileSync("src/styles.css", "utf8");
     const understanding = readFileSync("src/lib/understanding.ts", "utf8");
     expect(keep).toMatch(/paperBadgeLabel\(clip\.understanding\)/);
-    expect(keep).toMatch(/className="badge" data-mark=\{kind\}/);
+    expect(keep).toMatch(/const secondary = \[kind, host, date/);
     expect(keep).not.toMatch(/\bCOMMENT\b/);
     expect(keep).not.toMatch(/>Comment</);
     const related = keep.slice(keep.indexOf("function RelatedItem"));
     expect(related).not.toMatch(/paperBadgeLabel|className="badge"|data-mark/);
-    expect(css).toMatch(/\.badge\[data-mark="Opinion"\]/);
-    expect(css).not.toMatch(/data-mark="Comment"/);
-    expect(css).not.toMatch(/\.badge[^{]*\{[^}]*text-transform:\s*uppercase/);
+    expect(css).not.toMatch(/data-mark|\.badge/);
+    expect(css).not.toMatch(/text-transform:\s*uppercase/);
     expect(understanding).toMatch(/contentTypes = \["News", "Comment", "Study", "Notice"\]/);
     expect(understanding).not.toMatch(/"Opinion"/);
   });
-
-  it("keeps related titles as quiet include, not off-site links or Read", () => {
+  it("keeps related titles as a labelled include, not off-site links or Read", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
-    expect(keep).not.toMatch(/type="checkbox"/);
+    const related = keep.slice(keep.indexOf("function RelatedItem"));
+    expect(related).toMatch(/<label className="rel tick">/);
+    expect(related).toMatch(/<input type="checkbox" checked=\{on\}/);
+    expect(related).toMatch(/addToIssue/);
     expect(keep).toMatch(/relatedRow\(page\)/);
-    expect(keep).toMatch(/className="related-title"/);
+    expect(keep).toMatch(/className="rel-title"/);
     expect(keep).toMatch(/\{row\.title\}/);
     expect(keep).toMatch(/moreOnThisTopic/);
-    expect(keep).toMatch(/<h3>/);
     expect(keep).toMatch(/className="tally"/);
-    expect(keep).toMatch(/inLabel/);
     expect(keep).toMatch(/const \[open, setOpen\] = useState\(false\)/);
     expect(keep).toMatch(/aria-expanded=\{open\}/);
-    expect(keep).not.toMatch(/<a href=\{page\.url\}/);
     expect(keep).not.toMatch(/href=\{page\.url\}/);
     expect(keep).not.toMatch(/to="\/read\/\$id" params=\{\{ id: page/);
     expect(keep).not.toMatch(/<details|<summary/);
   });
-
   it("shows the stored related snippet, or publisher · date when there is no snippet", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
-    expect(keep).toMatch(/\{row\.snippet \? <span className="note">\{row\.snippet\}<\/span> : null\}/);
-    expect(keep).toMatch(/\{row\.detail \? <span className="folio">\{row\.detail\}<\/span> : null\}/);
+    expect(keep).toMatch(/\{row\.snippet \? <span className="rel-note">\{row\.snippet\}<\/span> : null\}/);
+    expect(keep).toMatch(/\{row\.detail \? <span className="rel-meta">\{row\.detail\}<\/span> : null\}/);
     expect(keep).not.toMatch(/runRelatedReporting|searchPages\(\{ query/);
   });
-
   it("puts Remove on each kept card and invalidates home", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     expect(keep).toMatch(/removeLabel/);
     expect(keep).toMatch(/removeKept/);
     expect(keep).toMatch(/store\.remove\(data\.id\)/);
     expect(keep).toMatch(/type="button"/);
-    expect(keep).toMatch(/className="quiet"/);
+    expect(keep).toMatch(/className="link-btn push"/);
     expect(keep).toMatch(/removeKept\(\{ data: \{ id: clip\.id \} \}\)\.then\(\(\) => router\.invalidate\(\)\)/);
     expect(keep).not.toMatch(/lucide-react|Trash2|sonner/);
   });
-
   it("puts quiet Remove on each bound-issue card and asks about the pieces", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     expect(keep).toMatch(/BoundCover/);
@@ -152,7 +143,7 @@ describe("kept card does not leak to the source", () => {
     expect(keep).toMatch(/returnToDeskLabel/);
     expect(keep).toMatch(/removePiecesTooLabel/);
     expect(keep).toMatch(/removeIssueAsk/);
-    expect(keep).toMatch(/className="quiet"/);
+    expect(keep).toMatch(/className="link-btn push" onClick=\{\(\) => setAsking\(true\)\}/);
     expect(keep).toMatch(
       /removeBound\(\{ data: \{ id: issue\.id, pieces \} \}\)\.then\(\(\) => router\.invalidate\(\)\)/,
     );
@@ -161,7 +152,6 @@ describe("kept card does not leak to the source", () => {
     expect(keep).toMatch(/className="board press"/);
     expect(keep).not.toMatch(/to=["']\/press["']/);
   });
-
   it("uses one Create issue for the board and does not bind an empty selection", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     expect(keep.match(/createIssueLabel/g)?.length).toBe(2);
@@ -173,16 +163,13 @@ describe("kept card does not leak to the source", () => {
     expect(keep).toMatch(/\/read\/\$id/);
   });
 
-  it("lets the headline open Read on this keep, and In is not the title", () => {
+  it("lets the headline open Read on this keep, and In the issue is not the title", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     expect(keep).toMatch(/to="\/read\/\$id"/);
     expect(keep).toMatch(/params=\{\{ id: clip\.id \}\}/);
     expect(keep).toMatch(/inLabel/);
-    expect(keep).toMatch(/className="include"/);
     expect(keep).toMatch(/includeOriginal/);
     expect(keep).toMatch(/onToggle/);
-    expect(keep).not.toMatch(/className="choice include"/);
-    expect(keep).not.toMatch(/type="checkbox"/);
     expect(keep).toMatch(/href=\{clip\.url\}/);
     expect(keep).not.toMatch(/href=\{page\.url\}/);
     expect(keep).toMatch(/keptFigure\(clip\.sourceHeadline\)/);
@@ -190,7 +177,6 @@ describe("kept card does not leak to the source", () => {
     expect(keep).not.toMatch(/fetchOg|ogImage/);
     expect(keep).not.toMatch(/<details|<summary/);
   });
-
   it("hides the Select sermons on the tiles", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     expect(keep).not.toMatch(/selectLine|originalInByDefault|suggestionsUntilSelected|relatedJoinWhenSelected/);
@@ -198,14 +184,11 @@ describe("kept card does not leak to the source", () => {
 
   it("keeps the Select board as two-column paper tiles on a wide viewport", () => {
     const css = readFileSync("src/styles.css", "utf8");
-    expect(css).toMatch(/@media \(min-width: 48rem\) \{[\s\S]*\.cards \{[\s\S]*grid-template-columns: 1fr 1fr;/);
-    expect(css).toMatch(/main:has\(> \.desk\),\s*main:has\(> \.board\) \{[\s\S]*max-width: 68rem;/);
-    expect(css).toMatch(/main:has\(> \.desk\) > \.site,\s*main:has\(> \.board\) > \.site \{[\s\S]*max-width: none;/);
-    expect(css).toMatch(/--paper: #faf7f1;/);
-    expect(css).toMatch(/--ink: #1c1814;/);
-    expect(css).toMatch(/--binding: #4a5c56;/);
+    expect(css).toMatch(/\.cards \{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+    expect(css).toMatch(/\.paper \{[\s\S]*max-width: 72rem;/);
+    expect(css).toMatch(/--paper: #f7f2df;/);
+    expect(css).toMatch(/--ink: #22201b;/);
   });
-
   it("does not fetch OG images as a second Keep pass", () => {
     const save = readFileSync("src/lib/save.ts", "utf8");
     const headline = readFileSync("src/lib/source-headline.ts", "utf8");
@@ -230,11 +213,9 @@ describe("kept card does not leak to the source", () => {
     const css = readFileSync("src/styles.css", "utf8");
     expect(keep).not.toMatch(/lucide-react|sonner|@\/components\/ui|TopicRail|ExternalLink|Trash2/);
     expect(css).not.toMatch(/mute-pine|#3d5a4c|#2f4f3e/i);
-    expect(css).toMatch(/--paper: #faf7f1;/);
-    expect(css).toMatch(/--ink: #1c1814;/);
-    expect(css).toMatch(/--binding: #4a5c56;/);
+    expect(css).toMatch(/--paper: #f7f2df;/);
+    expect(css).toMatch(/--ink: #22201b;/);
   });
-
   it("lets Keep show pending so mashed clicks do not duplicate", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     expect(keep).toMatch(/if \(keeping\) return;/);

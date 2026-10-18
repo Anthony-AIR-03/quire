@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quire Brand Guide</title>
+<link rel="icon" href="kit/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700;800&family=Grenze+Gotisch:wght@600&display=swap">
+<style>
+:root {
+  --ink: #22201B; --ink-2: #3D3A32; --muted: #5C574B;
+  --paper: #F7F2DF; --sheet: #FFFCF0; --line: #CFC6AA; --line-2: #E4DCC3;
+  --marigold: #F2B705; --marigold-soft: #FBEAB0; --link: #1D4F91;
+  --font: "Atkinson Hyperlegible Next", Verdana, Tahoma, sans-serif;
+  --gutter: 16px;
+  color-scheme: light;
+}
+@media (min-width: 720px) { :root { --gutter: 40px; } }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ink: #EDE6CF; --ink-2: #D6CFB9; --muted: #B2AA94; --paper: #1B1A16; --sheet: #24231E; --line: #4A463B; --line-2: #34322A; --marigold-soft: #4A3D12; --link: #A9C6F2; color-scheme: dark; }
+  :root:not([data-theme="light"]) .np { filter: invert(93%) sepia(12%) saturate(300%) hue-rotate(5deg); }
+}
+:root[data-theme="dark"] { --ink: #EDE6CF; --ink-2: #D6CFB9; --muted: #B2AA94; --paper: #1B1A16; --sheet: #24231E; --line: #4A463B; --line-2: #34322A; --marigold-soft: #4A3D12; --link: #A9C6F2; color-scheme: dark; }
+:root[data-theme="dark"] .np { filter: invert(93%) sepia(12%) saturate(300%) hue-rotate(5deg); }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 1.1875rem; line-height: 1.6; letter-spacing: 0.02em; word-spacing: 0.08em; }
+::selection { background: var(--marigold); color: #22201B; }
+h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--link); text-underline-offset: 0.28em; text-decoration-thickness: 1px; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold); }
+img { display: block; max-width: 100%; }
+.wrap { max-width: 72rem; margin: 0 auto; padding: 0 var(--gutter); }
+.small { font-size: 1rem; line-height: 1.5; }
+.muted { color: var(--muted); }
+.oxford { border: 0; height: 7px; margin: 0; background: linear-gradient(var(--ink), var(--ink)) top / 100% 4px no-repeat, linear-gradient(var(--ink), var(--ink)) bottom / 100% 1px no-repeat; }
+
+/* Cover */
+.cover { padding-top: 40px; }
+.cover .np { height: clamp(88px, 14vw, 168px); width: auto; margin: 0 auto; }
+.cover .oxford { margin-top: 20px; }
+.cover-bar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 24px; margin-top: 6px; padding: 8px 14px; background: #22201B; color: #F7F2DF; font-size: 1rem; font-weight: 700; line-height: 1.4; }
+.cover-lede { max-width: 60ch; margin: 36px auto 0; text-align: left; }
+.cover-lede h1 { font-size: clamp(2.125rem, 1.45rem + 2.2vw, 3rem); line-height: 1.15; }
+.cover-lede p { margin-top: 16px; }
+.toc { margin: 32px 0 0; padding: 18px 0 0; border-top: 1px solid var(--ink); display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 4px 32px; list-style: none; font-size: 1rem; }
+.toc a { display: inline-flex; min-height: 40px; align-items: center; color: var(--ink); text-decoration: none; font-weight: 700; }
+.toc a:hover { text-decoration: underline; }
+
+/* Sections */
+section.part { margin-top: 72px; }
+.part > .wrap > p.part-band { max-width: none; margin-top: 0; }
+.part-band { display: flex; justify-content: space-between; gap: 16px; padding: 10px 16px; background: var(--marigold); color: #22201B; font-size: 1rem; line-height: 1.4; }
+.part-band strong { font-weight: 800; }
+.part h2 { margin-top: 28px; font-size: clamp(1.75rem, 1.45rem + 1vw, 2.25rem); line-height: 1.2; }
+.part h3 { margin-top: 40px; font-size: 1.5rem; line-height: 1.3; }
+.part > .wrap > p, .part .prose p { max-width: 64ch; margin-top: 14px; }
+.prose p + p { margin-top: 1em; }
+.grid-2 { display: grid; gap: 24px 40px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); margin-top: 24px; align-items: start; }
+
+/* Colour */
+.swatches { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); margin-top: 24px; }
+.swatch { border: 1px solid var(--line); background: var(--sheet); }
+.swatch .chip { height: 112px; display: flex; align-items: flex-end; padding: 10px 12px; font-weight: 700; font-size: 1rem; }
+.swatch .info { padding: 10px 12px 12px; font-size: 1rem; line-height: 1.5; }
+.swatch .info strong { display: block; font-size: 1.1875rem; }
+.verdict { margin-top: 24px; padding: 20px 22px; background: var(--marigold-soft); border: 1px solid var(--line); max-width: 64ch; }
+.verdict h3 { margin: 0 !important; font-size: 1.1875rem !important; }
+.verdict p { margin-top: 8px; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1rem; line-height: 1.5; }
+caption { text-align: left; font-weight: 700; padding-bottom: 8px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--line); }
+thead th { border-bottom: 2px solid var(--ink); }
+td.num, th.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.table-scroll { overflow-x: auto; }
+
+/* Type */
+.spec { margin-top: 24px; border-top: 1px solid var(--ink); }
+.spec-row { display: grid; grid-template-columns: 12rem 1fr; gap: 8px 24px; padding: 18px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.spec-row .label { font-size: 1rem; line-height: 1.5; color: var(--muted); }
+.spec-row .label strong { display: block; color: var(--ink); }
+@media (max-width: 719px) { .spec-row { grid-template-columns: 1fr; } }
+.glyphs { font-size: clamp(2rem, 1.2rem + 3vw, 3.5rem); line-height: 1.3; letter-spacing: 0.06em; word-spacing: 0.3em; margin-top: 16px; }
+.np-type { font-family: "Grenze Gotisch", serif; font-weight: 600; }
+
+/* Kit */
+.kit { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); margin-top: 24px; }
+.kit figure { margin: 0; border: 1px solid var(--line); background: var(--sheet); }
+.kit .stage { height: 180px; display: grid; place-items: center; padding: 20px; }
+.kit .stage.dark { background: #22201B; }
+.kit .stage.marigold { background: #F2B705; }
+.kit .stage img { max-height: 100%; width: auto; }
+.kit figcaption { padding: 10px 12px; font-size: 1rem; line-height: 1.5; border-top: 1px solid var(--line-2); }
+.kit figcaption code { font-size: 0.9375rem; }
+.sizes { display: flex; align-items: flex-end; gap: 20px; }
+.donts { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
+.donts li { display: flex; gap: 10px; }
+.donts li::before { content: ""; flex: none; width: 14px; height: 14px; margin-top: 0.4em; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 2l10 10M12 2 2 12' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 2l10 10M12 2 2 12' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+
+/* Furniture specimens */
+.furniture { display: grid; gap: 28px; margin-top: 24px; }
+.f-item { border: 1px solid var(--line); background: var(--sheet); padding: 20px; }
+.f-item h3 { margin: 0 0 4px !important; font-size: 1.1875rem !important; }
+.f-item > p { font-size: 1rem; line-height: 1.5; color: var(--muted); max-width: 64ch; }
+.f-demo { margin-top: 16px; padding: 18px; background: var(--paper); border: 1px solid var(--line-2); }
+.ears { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+.ear { border: 1px solid var(--ink); padding: 8px 10px; font-size: 1rem; line-height: 1.4; }
+.ear strong { display: block; }
+.ears .np { height: 64px; width: auto; }
+@media (max-width: 719px) { .ears { grid-template-columns: 1fr; justify-items: center; } }
+.dateline { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 20px; margin-top: 6px; padding: 8px 14px; background: #22201B; color: #F7F2DF; font-size: 1rem; font-weight: 700; line-height: 1.4; }
+.band { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 20px; padding: 10px 16px; background: var(--marigold); color: #22201B; font-size: 1rem; line-height: 1.4; }
+.band a { color: #22201B; font-weight: 700; }
+.end-mark { display: inline-block; width: 0.6em; height: 0.6em; margin-left: 0.35em; background: var(--marigold); outline: 1px solid var(--ink); }
+.ribbon-demo { position: relative; padding-left: 40px; }
+.ribbon-demo img { position: absolute; left: 4px; top: -2px; width: 16px; height: 44px; }
+.pull { padding: 16px 0 18px; border-top: 4px solid var(--ink); border-bottom: 1px solid var(--ink); font-size: 1.5rem; line-height: 1.4; font-weight: 700; }
+.note-box { padding: 16px 18px; background: var(--marigold-soft); border: 1px solid var(--line); }
+.note-box strong { display: block; font-size: 1rem; }
+
+/* Icons */
+.icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 12px; margin-top: 20px; }
+.icons div { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--line); background: var(--sheet); font-size: 1rem; line-height: 1.3; }
+.icon { width: 28px; height: 28px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Tints */
+.tints { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); margin-top: 20px; }
+.tint { padding: 16px; border: 1px solid #22201B33; color: #22201B; font-size: 1rem; line-height: 1.5; }
+.tint strong { display: block; font-size: 1.1875rem; }
+.tint a { color: #1D4F91; }
+
+footer.colophon { margin: 80px 0 0; padding: 16px 0 40px; border-top: 1px solid var(--line); font-size: 1rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-parallel" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/></symbol>
+  <symbol id="i-contrast" viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></symbol>
+  <symbol id="i-unplaced" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.2v.1"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><path d="M3 19 8 5l5 14M4.8 14h6.4M15 19v-6.5a3 3 0 0 1 6 0V19M15 15.5h6"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-wait" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3zM12 10v4M12 17v.1"/></symbol>
+  <symbol id="i-ribbon" viewBox="0 0 24 24"><path d="M7 3h10v18l-5-4-5 4z"/></symbol>
+</svg>
+
+<header class="cover wrap">
+  <img class="np" src="kit/nameplate.svg" alt="Quire">
+  <hr class="oxford">
+  <p class="cover-bar"><span>Brand guide · version 1, draft for approval</span><span>18 October 2026</span></p>
+  <div class="cover-lede">
+    <h1>The Sunday Bundle</h1>
+    <p>Quire binds the pieces you keep into an issue of your own newspaper. Each issue is set like a British Sunday paper: a front page, then each piece as its own section. Every rule in this guide serves one reader who should be able to read without strain, following the British Dyslexia Association Style Guide (2023).</p>
+    <p class="small muted">This is the identity. The working mockup of the screens is in <a href="design-proposal.html">design-proposal.html</a>; the written decisions are in README.md.</p>
+  </div>
+  <ol class="toc">
+    <li><a href="#idea">The idea</a></li>
+    <li><a href="#colour">Colour, and the yellow question</a></li>
+    <li><a href="#type">Typography</a></li>
+    <li><a href="#reading">Dyslexia rules</a></li>
+    <li><a href="#kit">Logo and marks</a></li>
+    <li><a href="#furniture">Newspaper furniture</a></li>
+    <li><a href="#settings">Reading settings</a></li>
+    <li><a href="#icons">Icons</a></li>
+    <li><a href="#voice">Voice and copy</a></li>
+    <li><a href="#motion">Motion and print</a></li>
+  </ol>
+</header>
+
+<!-- 1. IDEA -->
+<section class="part" id="idea">
+  <div class="wrap"><p class="part-band"><strong>The idea</strong><span>Section 1</span></p></div>
+  <div class="wrap prose">
+    <h2>A newspaper made for one reader</h2>
+    <p>A quire is a gathering of folded sheets. A Sunday paper is the same thing at a larger scale: a bundle of sections, each with its own name across the top. Quire works the same way. You keep pieces on your Desk, choose which belong together, and Quire binds them into an issue.</p>
+    <p>The tradition gives us the furniture: a blackletter nameplate, thick-over-thin rules, an ink dateline bar, ears beside the nameplate, a coloured band at the head of every section, an end mark after the last line, and a folio at the foot. It does not give us its reading habits. Newspapers set text in narrow justified columns, in serif type, with italics and capital-letter labels. For a dyslexic reader those habits get in the way, so Quire drops them.</p>
+    <p><strong>The newspaper is the frame. The reading is plain.</strong> Everything that frames a page can look like Fleet Street. Everything you read sits in one ragged-right column of clear sans-serif type.</p>
+  </div>
+</section>
+
+<!-- 2. COLOUR -->
+<section class="part" id="colour">
+  <div class="wrap"><p class="part-band"><strong>Colour, and the yellow question</strong><span>Section 2</span></p></div>
+  <div class="wrap">
+    <h2>Yellow is right. Use marigold, as a fill.</h2>
+    <div class="verdict">
+      <h3>Why yellow fits Quire</h3>
+      <p>Yellow is the colour of a highlighter, and Quire is about keeping what you marked. Many dyslexic readers use yellow or cream overlays. And yellow avoids the reds, pinks and greens that the BDA guide warns against for colour-blind readers.</p>
+      <p>The choice is a warm <strong>marigold</strong> (#F2B705) rather than a lemon yellow: lemon vibrates against cream paper and looks cheap. Marigold sits well beside ink and newsprint, like a supplement's section band.</p>
+      <p><strong>One hard rule:</strong> marigold is never text on paper. It reaches only 1.6:1 there. It is a fill: the section band, the ribbon, a ticked box, the highlight on the current tab, text selection. Ink on marigold reaches 8.95:1.</p>
+    </div>
+    <p>I considered two alternatives. <strong>Ink blue</strong> is calm and safe for colour-blind readers, but it reads as corporate, so it is used only for links. <strong>Salmon</strong>, the colour of the FT's paper, is the most newspaper-like, but it sits in the pink range the BDA advises against.</p>
+
+    <div class="swatches">
+      <div class="swatch"><div class="chip" style="background:#F2B705;color:#22201B">Marigold</div><div class="info"><strong>#F2B705</strong>Fills only. Ink on it 8.95:1.<br>≈ Pantone 7409 C (check against a swatch book).</div></div>
+      <div class="swatch"><div class="chip" style="background:#22201B;color:#F7F2DF">Ink</div><div class="info"><strong>#22201B</strong>Text, rules, the dateline bar. Warm, not pure black, so it does not glare on paper.</div></div>
+      <div class="swatch"><div class="chip" style="background:#F7F2DF;color:#22201B;border-bottom:1px solid #CFC6AA">Newsprint</div><div class="info"><strong>#F7F2DF</strong>The default paper. Ink 14.5:1. Off-white, as the BDA advises.</div></div>
+      <div class="swatch"><div class="chip" style="background:#1D4F91;color:#F7F2DF">Press blue</div><div class="info"><strong>#1D4F91</strong>Links, always underlined. 7.26:1 on newsprint.</div></div>
+      <div class="swatch"><div class="chip" style="background:#5C574B;color:#F7F2DF">Muted</div><div class="info"><strong>#5C574B</strong>Bylines, dates, captions. 6.41:1 on newsprint.</div></div>
+      <div class="swatch"><div class="chip" style="background:#FBEAB0;color:#22201B">Marigold soft</div><div class="info"><strong>#FBEAB0</strong>Quire's note, hover. Ink on it 13.6:1.</div></div>
+      <div class="swatch"><div class="chip" style="background:#FFFCF0;color:#22201B;border-bottom:1px solid #CFC6AA">Sheet</div><div class="info"><strong>#FFFCF0</strong>Clippings on the Desk, inputs, the settings panel.</div></div>
+      <div class="swatch"><div class="chip" style="background:#CFC6AA;color:#22201B">Rule</div><div class="info"><strong>#CFC6AA</strong> hairlines · <strong style="display:inline">#E4DCC3</strong> quiet dividers.</div></div>
+    </div>
+
+    <h3>Status never relies on colour</h3>
+    <p style="max-width:64ch;margin-top:12px">The BDA guide warns against red and green, so Quire has no red or green status colours at all. A problem is shown with a drawn icon and a plain sentence in bold ink: “Could not read a headline from the source.” Waiting shows a clock icon and the step in words: “Reading the page…”.</p>
+
+    <h3>Night</h3>
+    <p style="max-width:64ch;margin-top:12px">Night paper #1B1A16 with text #EDE6CF (13.95:1), muted #B2AA94 (7.52:1), links #A9C6F2 (9.99:1). Marigold stays the same. The ink dateline bar inverts to paper-on-night. Night follows the device setting until the reader picks a paper colour themselves.</p>
+  </div>
+</section>
+
+<!-- 3. TYPE -->
+<section class="part" id="type">
+  <div class="wrap"><p class="part-band"><strong>Typography</strong><span>Section 3</span></p></div>
+  <div class="wrap">
+    <h2>One sans-serif family at five sizes. Blackletter only in the logo.</h2>
+    <p><strong>Atkinson Hyperlegible Next</strong> (Braille Institute, 2025, SIL Open Font License) is set for every word you read: headlines, body, labels, buttons. It was drawn so that letters which are easy to confuse look clearly different. That serves the same goal as the BDA's sans-serif advice, and it avoids the problem the thesis's expert found with Arial, where a capital I and a small l look the same.</p>
+    <p class="glyphs">Il1| O0 bdpq rn m 6b 9g</p>
+    <p class="small muted" style="margin-top:6px">Capital I, small l, one and a bar are four different shapes. Small b, d, p and q are not plain mirror images. “rn” does not turn into “m”.</p>
+
+    <p style="margin-top:28px"><span class="np-type" style="font-size:2rem">Quire</span> — <strong>Grenze Gotisch</strong> SemiBold (SIL Open Font License) is used <strong>only</strong> for the nameplate, and only as outlined artwork, never as live text. I chose it over the Fraktur faces because its capital Q stays a Q. In UnifrakturMaguntia it reads close to a D.</p>
+
+    <div class="spec">
+      <div class="spec-row"><div class="label"><strong>Display</strong>34 → 48 px · 800 · line 1.15<br>Front-page lead headline</div><div style="font-size:clamp(2.125rem,1.45rem + 2.2vw,3rem);line-height:1.15;font-weight:800">Why the town library kept its card catalogue</div></div>
+      <div class="spec-row"><div class="label"><strong>Headline</strong>28 → 36 px · 800 · line 1.2<br>Article headline, sign-in title</div><div style="font-size:clamp(1.75rem,1.45rem + 1vw,2.25rem);line-height:1.2;font-weight:800">Card catalogues are back in fashion</div></div>
+      <div class="spec-row"><div class="label"><strong>Subhead</strong>24 px · 700–800 · line 1.3<br>Subheadings (26% larger than body), section titles, pull quotes</div><div style="font-size:1.5rem;line-height:1.3;font-weight:800">A slower way to find a book</div></div>
+      <div class="spec-row"><div class="label"><strong>Body</strong>19 px · 400 · line 1.6<br>Reading text. Bold 700 for emphasis.</div><div style="max-width:64ch">Nobody here argues that the drawers are faster than the search screen. They are not. The point, the head librarian says, is <strong>what you pass on the way</strong>.</div></div>
+      <div class="spec-row"><div class="label"><strong>Small</strong>16 px · 400/700 · line 1.5<br>Bylines, captions, buttons, folios. Never smaller.</div><div style="font-size:1rem;line-height:1.5"><strong>The Northfield Courier</strong> · By Ada Morrow · 12 October 2026</div></div>
+    </div>
+    <p>Five sizes is the whole scale. A reader learns it once. Headlines use sentence case and no negative tracking. Nothing is set in capitals except where a word is a capital (No., BBC). Bold is the only emphasis: Quire never sets italic, and turns the source's own italics into bold.</p>
+    <p>Fonts are self-hosted as <code>.woff2</code> in the app, so reading an issue does not tell Google what you read.</p>
+  </div>
+</section>
+
+<!-- 4. DYSLEXIA RULES -->
+<section class="part" id="reading">
+  <div class="wrap"><p class="part-band"><strong>Dyslexia rules</strong><span>Section 4</span></p></div>
+  <div class="wrap">
+    <h2>What the BDA guide asks, and how Quire does it</h2>
+    <p>Sources: British Dyslexia Association, “Dyslexia Style Guide” (2023); L. Ebbing, “Design of a newspaper for people with dyslexia” (ESAD, 2023), which tested a newspaper with twelve dyslexic readers. Where they speak to newspapers directly, that is noted.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Guidance</th><th>Quire</th></tr></thead>
+      <tbody>
+        <tr><td>Sans-serif type, 16–19 px (BDA)</td><td>Atkinson Hyperlegible Next. Body 19 px by default; the reader can choose 17, 22 or 25. Nothing on screen is under 16 px.</td></tr>
+        <tr><td>Letter spacing around 35% of letter width; word spacing at least 3.5× letter spacing (BDA)</td><td>The typeface is already widely spaced. Quire adds 0.02em tracking and 0.08em word spacing. <strong>Wide spacing</strong> in Reading settings sets 0.12em letters, 0.16em words, line height 2 and paragraph gaps of 2em (the WCAG 1.4.12 values).</td></tr>
+        <tr><td>Line spacing about 1.5 (BDA)</td><td>1.6 for body, 1.5 for small text.</td></tr>
+        <tr><td>Left-aligned, never justified (BDA, and the thesis survey)</td><td>All text is left-aligned with a ragged right edge, and words are never hyphenated. Headlines are left-aligned too, with their lines balanced.</td></tr>
+        <tr><td>Avoid multiple columns, as in newspapers (BDA); readers found two narrow columns acceptable on paper (thesis)</td><td>Reading text is <strong>always one column</strong>, at most 64 characters wide. Columns appear only for separate items, such as the “In this issue” grid on the front page. Text never runs from one column into the next.</td></tr>
+        <tr><td>Avoid italics and underline (BDA)</td><td>No italics anywhere. Links keep an underline because colour alone would fail WCAG (blue against ink is only 2.0:1). It is a 1 px line set well below the text (0.28em offset) so it does not touch the letters.</td></tr>
+        <tr><td>No capitals for running text (BDA)</td><td>No capital-letter labels. The newspaper's tracked caps (section names, folios) become sentence case in bold.</td></tr>
+        <tr><td>Headings at least 20% larger, with space around them (BDA)</td><td>Subheads are 24 px against 19 px body (+26%), with 2em above and 0.6em below.</td></tr>
+        <tr><td>Off-white single-colour background, no patterns (BDA)</td><td>Newsprint #F7F2DF by default. No paper texture, no grain, no images behind text.</td></tr>
+        <tr><td>Readers have their own colour preference (BDA)</td><td>Reading settings: newsprint, cream, yellow, blue, grey, night.</td></tr>
+        <tr><td>Avoid red, green and pink (BDA)</td><td>None used. Status is an icon plus words.</td></tr>
+        <tr><td>Images help, but large images distract (thesis: 7 of 12 readers)</td><td>Source figures are shown whole, never cropped. Their height is capped (about 26rem on a page, 12rem on a Desk card), and they are never placed inside the text.</td></tr>
+        <tr><td>Keep the layout the same from page to page (thesis)</td><td>Every article page has the same order: band, headline, byline, figure, text, end mark, source note, page-turn bar.</td></tr>
+        <tr><td>Short sentences, plain words, no jargon (BDA)</td><td>Quire's own copy follows this (see Voice). The author's words are never rewritten.</td></tr>
+        <tr><td>Matt paper for print (BDA)</td><td>The print stylesheet keeps the same single column at 12 pt. The guide recommends matt paper.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>What Quire leaves out of the newspaper tradition</h3>
+    <p>Justified columns. Text flowing across columns. Serif body type. Italic standfirsts. Drop caps, which split the first word. Capital-letter section labels. “Continued on page 6” jumps. Dense six-column front pages. Halftone screens over photographs.</p>
+  </div>
+</section>
+
+<!-- 5. KIT -->
+<section class="part" id="kit">
+  <div class="wrap"><p class="part-band"><strong>Logo and marks</strong><span>Section 5</span></p></div>
+  <div class="wrap">
+    <h2>The nameplate, the Q, and the ribbon</h2>
+    <div class="kit">
+      <figure><div class="stage"><img src="kit/nameplate.svg" alt="Quire nameplate" style="height:96px"></div><figcaption><strong>Nameplate</strong> · <code>nameplate.svg</code><br>Grenze Gotisch SemiBold, outlined. Ink on paper.</figcaption></figure>
+      <figure><div class="stage"><img src="kit/masthead.svg" alt="Quire masthead with Oxford rules" style="width:90%;height:auto"></div><figcaption><strong>Masthead</strong> · <code>masthead.svg</code><br>Nameplate between Oxford rules: thick over thin above, thin over thick below.</figcaption></figure>
+      <figure><div class="stage dark"><img src="kit/masthead-night.svg" alt="Night masthead" style="width:90%;height:auto"></div><figcaption><strong>Night masthead</strong> · <code>masthead-night.svg</code></figcaption></figure>
+      <figure><div class="stage"><img src="kit/mark.svg" alt="Q mark" style="height:120px"></div><figcaption><strong>Q mark</strong> · <code>mark.svg</code><br>Blackletter Q on a marigold square, like a newsagent's bill. Square corners.</figcaption></figure>
+      <figure><div class="stage"><img src="kit/app-icon.svg" alt="App icon" style="height:120px"></div><figcaption><strong>App icon</strong> · <code>app-icon.svg</code><br>Rounded tile (radius 56 on 256) for home screens.</figcaption></figure>
+      <figure><div class="stage"><div class="sizes"><img src="kit/favicon.svg" alt="" width="16" height="16"><img src="kit/favicon.svg" alt="" width="32" height="32"><img src="kit/favicon.svg" alt="" width="48" height="48"><img src="kit/mark-ink.svg" alt="" width="48" height="48"></div></div><figcaption><strong>Favicon</strong> · <code>favicon.svg</code> at 16, 32, 48 px, and the ink version <code>mark-ink.svg</code>.</figcaption></figure>
+      <figure><div class="stage"><img src="kit/ribbon.svg" alt="Ribbon marker" style="height:120px"></div><figcaption><strong>Ribbon</strong> · <code>ribbon.svg</code><br>The bookmark: it marks where you stopped reading. Marigold, V-notched foot.</figcaption></figure>
+    </div>
+    <div class="grid-2">
+      <div>
+        <h3 style="margin-top:0">Use</h3>
+        <ul class="small" style="padding-left:1.2em;margin:12px 0 0">
+          <li>The nameplate always sits on paper, night paper or marigold. Never on a photograph.</li>
+          <li>Clear space around the nameplate: the height of the small letter u.</li>
+          <li>Smallest nameplate: 24 px high. Below that, use the Q mark.</li>
+          <li>The nameplate is a picture with the text “Quire” as its alternative. It is never live text, so assistive technology reads the name correctly.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0">Don't</h3>
+        <ul class="donts small">
+          <li>Set anything else in blackletter, not even a headline.</li>
+          <li>Add “The” to the name. Quire is the name.</li>
+          <li>Recolour the nameplate marigold, or put marigold text on paper.</li>
+          <li>Stretch, outline, shadow or rotate the marks.</li>
+          <li>Use the ribbon as decoration. It means “you stopped here”, or “chosen”.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. FURNITURE -->
+<section class="part" id="furniture">
+  <div class="wrap"><p class="part-band"><strong>Newspaper furniture</strong><span>Section 6</span></p></div>
+  <div class="wrap">
+    <h2>The pieces that make it a newspaper</h2>
+    <p>Each piece has one job and is used the same way everywhere. Only <strong>one element per page is reversed</strong> (paper on ink), and that is how you know it matters most: the dateline bar on a front page, or the primary button on the Desk.</p>
+    <div class="furniture">
+      <div class="f-item"><h3>Ears and nameplate</h3><p>The two boxes beside the nameplate on a front page. They hold real facts only: the issue number and binding date on the left; the number of pieces and an estimated reading time on the right. On phones the ears fold into one line under the nameplate.</p>
+        <div class="f-demo"><div class="ears"><div class="ear"><strong>Issue No. 7</strong>Bound Sunday 18 October 2026</div><img class="np" src="kit/nameplate.svg" alt="Quire"><div class="ear"><strong>4 pieces</strong>About 19 minutes of reading</div></div><hr class="oxford" style="margin-top:12px"><p class="dateline"><span>Sunday 18 October 2026</span><span>A personal press for one reader</span></p></div></div>
+      <div class="f-item"><h3>Section band</h3><p>Marigold, full width, at the head of every article page. It names the page and the source, and links out to the original. It acts as the section's own nameplate, so it stays well apart from the headline (40 px).</p>
+        <div class="f-demo"><p class="band"><span><strong>Page 2</strong> · From The Northfield Courier</span><a href="#furniture">northfield-courier.example</a></p></div></div>
+      <div class="f-item"><h3>Pull quote</h3><p>The author's own sentence, upright, bold, 24 px, between a thick and a thin rule. Never italic, never in quotation-mark artwork.</p>
+        <div class="f-demo"><div class="pull">“You look for one card and read the six around it.”</div></div></div>
+      <div class="f-item"><h3>Quire's note</h3><p>The optional take. It is labelled “Quire's note”, so it is never confused with the author's words. It sits in a soft marigold box. If there is no take, the page reads fine without it.</p>
+        <div class="f-demo"><div class="note-box"><strong>Quire's note</strong>This piece argues the catalogue helps readers find books they were not looking for.</div></div></div>
+      <div class="f-item"><h3>End mark and ribbon</h3><p>A small marigold square after the last word says “this piece is finished”. The ribbon in the margin marks the paragraph where you stopped, and the page offers to take you back there.</p>
+        <div class="f-demo"><p class="ribbon-demo"><img src="kit/ribbon.svg" alt="">Eleven volunteers share the work. Most are retired.</p><p style="margin-top:14px">For now the drawers stay.<span class="end-mark" aria-hidden="true"></span></p></div></div>
+      <div class="f-item"><h3>Folio and page turn</h3><p>The foot of every reading page: Previous, “Page 2 of 5”, Next. On a large screen, Next also shows the coming headline. The bar stays on screen, its buttons are at least 48 px tall, and the arrow keys turn the page.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. SETTINGS -->
+<section class="part" id="settings">
+  <div class="wrap"><p class="part-band"><strong>Reading settings</strong><span>Section 7</span></p></div>
+  <div class="wrap">
+    <h2>The reader chooses the paper</h2>
+    <p>Reading settings sit behind a button in the app bar of every reading page and in the Desk's navigation. They open as a panel under the bar, not a pop-up, so the page stays visible while you choose. The choice is saved on the device and applies everywhere, including the Desk.</p>
+    <div class="tints">
+      <div class="tint" style="background:#F7F2DF"><strong>Newsprint</strong>Default. Ink 14.5:1, <a href="#settings">links</a> 7.3:1.</div>
+      <div class="tint" style="background:#FBF6E9"><strong>Cream</strong>Ink 15.1:1.</div>
+      <div class="tint" style="background:#FBF0C2"><strong>Yellow</strong>Ink 14.2:1. A yellow overlay without the overlay.</div>
+      <div class="tint" style="background:#E3EDF5"><strong>Blue</strong>Ink 13.7:1.</div>
+      <div class="tint" style="background:#ECECE8"><strong>Grey</strong>Ink 13.7:1.</div>
+      <div class="tint" style="background:#1B1A16;color:#EDE6CF"><strong>Night</strong>Text 14.0:1. <a href="#settings" style="color:#A9C6F2">Links</a> 10.0:1.</div>
+    </div>
+    <p>Text size: Small 17, Standard 19, Large 22, Largest 25 px. Spacing: Standard, or Wide (WCAG 1.4.12 values). Headlines keep their sizes, so the page keeps its shape.</p>
+  </div>
+</section>
+
+<!-- 8. ICONS -->
+<section class="part" id="icons">
+  <div class="wrap"><p class="part-band"><strong>Icons</strong><span>Section 8</span></p></div>
+  <div class="wrap">
+    <h2>Drawn line icons, always with a word</h2>
+    <p>24-unit grid, 2-unit stroke, round ends and joins, drawn in ink. An icon never stands alone: it sits next to its word, which helps readers who find pictures easier to spot than text.</p>
+    <div class="icons">
+      <div><svg class="icon"><use href="#i-parallel"/></svg>Other reporting</div>
+      <div><svg class="icon"><use href="#i-contrast"/></svg>A contrasting angle</div>
+      <div><svg class="icon"><use href="#i-unplaced"/></svg>Could not place</div>
+      <div><svg class="icon"><use href="#i-out"/></svg>Source</div>
+      <div><svg class="icon"><use href="#i-list"/></svg>Contents</div>
+      <div><svg class="icon"><use href="#i-text"/></svg>Reading settings</div>
+      <div><svg class="icon"><use href="#i-print"/></svg>Print this issue</div>
+      <div><svg class="icon"><use href="#i-left"/></svg>Previous</div>
+      <div><svg class="icon"><use href="#i-right"/></svg>Next</div>
+      <div><svg class="icon"><use href="#i-wait"/></svg>Working</div>
+      <div><svg class="icon"><use href="#i-alert"/></svg>Problem</div>
+      <div><svg class="icon"><use href="#i-ribbon"/></svg>Where you stopped</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. VOICE -->
+<section class="part" id="voice">
+  <div class="wrap"><p class="part-band"><strong>Voice and copy</strong><span>Section 9</span></p></div>
+  <div class="wrap">
+    <h2>Short, plain, and honest about gaps</h2>
+    <p>Quire keeps William's calm register and his product words (Keep, Desk, Select, Create issue, Press, More on this topic). It adds the BDA's writing rules: short sentences, active voice, everyday words, no double negatives, and no jargon such as “URL”.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Now</th><th>Proposed</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Nothing kept yet. Paste a URL. It stays.</td><td>Nothing kept yet. Paste a link above to keep it.</td><td>“Link”, not “URL”. Says where to act.</td></tr>
+        <tr><td>(placeholder only) https://</td><td>Label “Keep a link”, hint “Paste the address of an article. Quire saves it and reads it for you.”</td><td>A placeholder disappears when you type; a label stays.</td></tr>
+        <tr><td>Tick icon labelled “In” for screen readers</td><td>Visible checkbox label “In the issue”</td><td>Everyone sees what the box means.</td></tr>
+        <tr><td>Select something to bind. An issue is what you choose.</td><td>Tick at least one piece to create an issue.</td><td>One instruction, one sentence.</td></tr>
+        <tr><td>Take (unlabelled italic between hairlines)</td><td>Quire's note (labelled, upright)</td><td>Separates Quire's words from the author's. No italics.</td></tr>
+        <tr><td>01 / 05</td><td>Page 2 of 5</td><td>Words read more easily than padded numbers.</td></tr>
+        <tr><td>That issue is not here.</td><td>This issue is not in your Press. It may have been removed.</td><td>Names the problem and the likely cause.</td></tr>
+        <tr><td>Return the pieces to Desk, or remove them too?</td><td>Remove this issue? Its pieces can go back to your Desk, or be removed too.<br>Buttons: “Put pieces back on the Desk” · “Remove the pieces too” · “Keep the issue”</td><td>Clear choices and a clear way out.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- 10. MOTION & PRINT -->
+<section class="part" id="motion">
+  <div class="wrap"><p class="part-band"><strong>Motion and print</strong><span>Section 10</span></p></div>
+  <div class="wrap prose">
+    <h2>Quiet on screen, the same on paper</h2>
+    <p><strong>Motion.</strong> Turning a page is a short fade (about 220 ms, easing out), with no page-flip animation, since moving text is harder to track. The next page starts at the top. The ribbon note appears without moving. Opening “More on this topic” turns its arrow. With reduced motion set on the device, nothing animates.</p>
+    <p><strong>Print.</strong> Print this issue uses the same order: front page, then one piece per page, each opening with its band and ending with its end mark. The single column stays, set in Atkinson Hyperlegible Next at 12 pt on A4 or letter, with a folio at the foot of every page. The settings, the page-turn bar and the app bar are not printed. Matt paper is recommended.</p>
+  </div>
+</section>
+
+<footer class="colophon wrap">
+  Quire brand guide, version 1 draft, 18 October 2026. For Anthony's personal build of Quire. Typefaces: Atkinson Hyperlegible Next and Grenze Gotisch, both SIL Open Font License. Sample text in this guide is invented.
+</footer>
+</body>
+</html>

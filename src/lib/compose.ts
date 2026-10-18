@@ -35,6 +35,11 @@ export type SequenceSheet = {
   paragraphs: string[];
   intent: DesignIntent;
   folio: string;
+  /** The source's own address and cover line. Never invented. */
+  url: string;
+  /** Publisher · date, source-owned. No stance. */
+  sourceLine?: string;
+  standfirst?: string;
   figure?: SheetFigure;
   take?: { text: string };
   blocks?: BodyBlock[];
@@ -224,10 +229,15 @@ function quietDate(value: string) {
 
 /** Quiet publisher · date. Source-owned only. Never a hostname fallback. Related stance sits here when labeled. */
 export function pieceColophon(piece: BoundPiece) {
+  const stance = piece.role === "related" && piece.stance ? stanceCopy(piece.stance) : "";
+  return [pieceSourceLine(piece), stance].filter(Boolean).join(" · ");
+}
+
+/** Publisher · date. Source-owned only. */
+export function pieceSourceLine(piece: BoundPiece) {
   const publisher = piece.publisher?.trim() ?? "";
   const date = piece.published ? quietDate(piece.published) : "";
-  const stance = piece.role === "related" && piece.stance ? stanceCopy(piece.stance) : "";
-  return [publisher, date, stance].filter(Boolean).join(" · ");
+  return [publisher, date].filter(Boolean).join(" · ");
 }
 
 /**
@@ -311,11 +321,16 @@ export function composeIssue(issue: BoundIssue): PagePlan {
     const colophon = pieceColophon(piece);
     const briefing =
       intent.treatment === "screening" ? piece.paragraphs.slice(0, 2) : piece.paragraphs;
+    const standfirst = piece.coverLine?.trim();
+    const sourceLine = pieceSourceLine(piece);
     return {
       headline: piece.headline,
       paragraphs: briefing,
       intent,
       folio: folioOf(index + 3),
+      url: piece.url,
+      ...(sourceLine ? { sourceLine } : {}),
+      ...(standfirst ? { standfirst } : {}),
       ...(figure ? { figure } : {}),
       ...(isLead && take ? { take: { text: take } } : {}),
       ...(piece.blocks?.length && intent.treatment !== "screening" ? { blocks: piece.blocks } : {}),
@@ -353,23 +368,20 @@ export function composeIssue(issue: BoundIssue): PagePlan {
   };
 }
 
-export type ReadingSheet =
-  | { kind: "cover" }
-  | { kind: "contents" }
-  | { kind: "piece"; index: number };
+export type ReadingSheet = { kind: "front" } | { kind: "piece"; index: number };
 
-/** Cover, then contents, then the sequence. One sheet at a time. Not a stacked page. */
-export function readingSheets(page: PagePlan): ReadingSheet[] {
-  return [
-    { kind: "cover" },
-    { kind: "contents" },
-    ...page.sequence.map((_, index) => ({ kind: "piece" as const, index })),
-  ];
+/**
+ * A bound issue opens on its front page, then one piece per page. A kept
+ * piece read on its own is just its page. One sheet at a time.
+ */
+export function readingSheets(page: PagePlan, options: { front?: boolean } = {}): ReadingSheet[] {
+  const pieces = page.sequence.map((_, index) => ({ kind: "piece" as const, index }));
+  return options.front === false ? pieces : [{ kind: "front" }, ...pieces];
 }
 
-/** Same object: cover 0, contents 1, pieces after that. */
-export function pieceSheetIndex(pieceIndex: number): number {
-  return 2 + pieceIndex;
+/** Front page 0, pieces after that. */
+export function pieceSheetIndex(pieceIndex: number, options: { front?: boolean } = {}): number {
+  return options.front === false ? pieceIndex : 1 + pieceIndex;
 }
 
 export function clampSheetIndex(index: number, count: number): number {

@@ -136,7 +136,9 @@ describe("current reader", () => {
 
   it("is not part of Keep or bind", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
-    expect(keep).not.toMatch(/currentReaderId|bookmark/);
+    const keepAndBind = keep.slice(keep.indexOf("const keepUrl"), keep.indexOf("const removeKept"));
+    expect(keepAndBind).toMatch(/createIssue\(/);
+    expect(keepAndBind).not.toMatch(/currentReaderId|bookmark/);
   });
 });
 

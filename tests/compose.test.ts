@@ -91,12 +91,8 @@ describe("Read composition", () => {
     expect(page.contents.rows.map((row) => row.folio)).toEqual(["03", "04"]);
     expect(page.sequence).toHaveLength(2);
     expect(page.sequence.map((sheet) => sheet.folio)).toEqual(["03", "04"]);
-    expect(readingSheets(page).map((sheet) => sheet.kind)).toEqual([
-      "cover",
-      "contents",
-      "piece",
-      "piece",
-    ]);
+    expect(readingSheets(page).map((sheet) => sheet.kind)).toEqual(["front", "piece", "piece"]);
+    expect(readingSheets(page, { front: false }).map((sheet) => sheet.kind)).toEqual(["piece", "piece"]);
     expect(JSON.stringify(page.cover)).not.toMatch(/https:\/\/example\.com\/kept/);
     expect(page.contents.rows.every((row) => !row.folio.includes("http"))).toBe(true);
     expect(page.cover.kicker).toBeUndefined();
@@ -119,18 +115,18 @@ describe("Read composition", () => {
       ],
     });
     const sheets = readingSheets(page);
-    expect(sheets.map((sheet) => sheet.kind)).toEqual(["cover", "contents", "piece", "piece"]);
-    expect(pieceSheetIndex(0)).toBe(2);
-    expect(pieceSheetIndex(1)).toBe(3);
+    expect(sheets.map((sheet) => sheet.kind)).toEqual(["front", "piece", "piece"]);
+    expect(pieceSheetIndex(0)).toBe(1);
+    expect(pieceSheetIndex(1)).toBe(2);
+    expect(pieceSheetIndex(0, { front: false })).toBe(0);
     expect(sheets[pieceSheetIndex(0)]).toEqual({ kind: "piece", index: 0 });
     expect(sheets[pieceSheetIndex(1)]).toEqual({ kind: "piece", index: 1 });
     expect(nextSheetIndex(0, sheets.length)).toBe(1);
     expect(nextSheetIndex(1, sheets.length)).toBe(2);
-    expect(nextSheetIndex(2, sheets.length)).toBe(3);
-    expect(nextSheetIndex(3, sheets.length)).toBe(3);
+    expect(nextSheetIndex(2, sheets.length)).toBe(2);
     expect(previousSheetIndex(0, sheets.length)).toBe(0);
     expect(previousSheetIndex(2, sheets.length)).toBe(1);
-    expect(clampSheetIndex(99, sheets.length)).toBe(3);
+    expect(clampSheetIndex(99, sheets.length)).toBe(2);
     expect(page.contents.rows[0]?.folio).toBe(page.sequence[0]?.folio);
     expect(page.contents.rows[1]?.folio).toBe(page.sequence[1]?.folio);
   });
@@ -201,18 +197,18 @@ describe("Read composition", () => {
       ],
     });
     const sheets = readingSheets(page);
-    expect(sheets.map((sheet) => sheet.kind)).toEqual(["cover", "contents", "piece", "piece"]);
-    expect(pieceSheetIndex(0)).toBe(2);
-    expect(pieceSheetIndex(1)).toBe(3);
+    expect(sheets.map((sheet) => sheet.kind)).toEqual(["front", "piece", "piece"]);
+    expect(pieceSheetIndex(0)).toBe(1);
+    expect(pieceSheetIndex(1)).toBe(2);
+    expect(pieceSheetIndex(0, { front: false })).toBe(0);
     expect(sheets[pieceSheetIndex(0)]).toEqual({ kind: "piece", index: 0 });
     expect(sheets[pieceSheetIndex(1)]).toEqual({ kind: "piece", index: 1 });
     expect(nextSheetIndex(0, sheets.length)).toBe(1);
     expect(nextSheetIndex(1, sheets.length)).toBe(2);
-    expect(nextSheetIndex(2, sheets.length)).toBe(3);
-    expect(nextSheetIndex(3, sheets.length)).toBe(3);
+    expect(nextSheetIndex(2, sheets.length)).toBe(2);
     expect(previousSheetIndex(0, sheets.length)).toBe(0);
     expect(previousSheetIndex(2, sheets.length)).toBe(1);
-    expect(clampSheetIndex(99, sheets.length)).toBe(3);
+    expect(clampSheetIndex(99, sheets.length)).toBe(2);
     expect(page.contents.rows[0]?.folio).toBe(page.sequence[0]?.folio);
     expect(page.contents.rows[1]?.folio).toBe(page.sequence[1]?.folio);
   });

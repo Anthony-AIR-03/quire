@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { bindLine, dek, headline, productName } from "../copy";
+import { READING_SETTINGS_SCRIPT } from "../reading-settings";
 import appCss from "../styles.css?url";
+import favicon from "../assets/favicon.svg?url";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -10,13 +12,11 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: productName },
       { name: "description", content: `${headline} ${bindLine} ${dek}` },
+      { name: "theme-color", content: "#F7F2DF" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap",
-      },
+      { rel: "icon", type: "image/svg+xml", href: favicon },
     ],
   }),
   component: RootComponent,
@@ -32,8 +32,10 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en-GB" data-size="m" data-spacing="standard" suppressHydrationWarning>
       <head>
+        {/* Applies the reader's paper, size and spacing before the first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: READING_SETTINGS_SCRIPT }} />
         <HeadContent />
       </head>
       <body>

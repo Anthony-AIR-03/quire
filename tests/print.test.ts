@@ -105,7 +105,7 @@ describe("Print this issue", () => {
     expect(JSON.stringify(plan)).not.toMatch(/\bPress\b/);
   });
 
-  it("places an ok take as unlabeled italic, never a Take kicker", async () => {
+  it("prints an ok take as Quire's note, labelled and upright, never italic", async () => {
     const plan = printPlan(issue);
     const lead = plan.sheets.find((sheet) => sheet.kind === "piece");
     expect(lead?.kind).toBe("piece");
@@ -113,13 +113,10 @@ describe("Print this issue", () => {
       expect(lead.take).toBe("A quiet count in Praia.");
     }
     const compositor = readFileSync("src/lib/print-compose.ts", "utf8");
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    expect(compositor).toMatch(/serifIt/);
-    expect(compositor).not.toMatch(/["']Take["']/);
-    expect(compositor).not.toMatch(/takeLabel/);
+    expect(compositor).toMatch(/if \(sheet\.take\) drawNote\(book, sheet\.take\)/);
+    expect(compositor).toMatch(/write\(book, takeLabel,/);
+    expect(compositor).not.toMatch(/serifIt|Italic|["']Take["']/);
     expect(compositor).not.toMatch(/TL;DR|tl;dr/);
-    expect(read).not.toMatch(/takeLabel/);
-    expect(read).not.toMatch(/>Take</);
 
     const missing = printPlan({ ...issue, take: null });
     const bare = missing.sheets.find((sheet) => sheet.kind === "piece");
@@ -129,8 +126,7 @@ describe("Print this issue", () => {
       expect(bare.paragraphs.join(" ")).toMatch(/assembly met at dusk/);
     }
   });
-
-  it("composes A4 and letter with the locked tokens and two families", async () => {
+  it("composes A4 and letter in the brand's ink, marigold and one family", async () => {
     expect(paperNameFor("en-GB")).toBe("a4");
     expect(paperNameFor("nl-NL")).toBe("a4");
     expect(paperNameFor("en-US")).toBe("letter");
@@ -150,22 +146,19 @@ describe("Print this issue", () => {
     });
 
     const compositor = readFileSync("src/lib/print-compose.ts", "utf8");
-    expect(compositor).toMatch(/250 \/ 255,\s*247 \/ 255,\s*241 \/ 255/);
-    expect(compositor).toMatch(/28 \/ 255,\s*24 \/ 255,\s*20 \/ 255/);
-    expect(compositor).toMatch(/74 \/ 255,\s*92 \/ 255,\s*86 \/ 255/);
-    expect(compositor).not.toMatch(/243 \/ 255,\s*238 \/ 255,\s*228 \/ 255/);
-    expect(compositor).not.toMatch(/61 \/ 255,\s*74 \/ 255,\s*58 \/ 255/);
-    expect(compositor).not.toMatch(/79 \/ 255,\s*111 \/ 255,\s*92 \/ 255/);
-    expect(compositor).toMatch(/SourceSans3-Regular\.ttf/);
-    expect(compositor).toMatch(/SourceSans3-Semibold\.ttf/);
-    expect(compositor).toMatch(/SourceSerif4-Regular\.ttf/);
-    expect(compositor).toMatch(/SourceSerif4-Italic\.ttf/);
-    expect(compositor).not.toMatch(/StandardFonts|Helvetica|Playfair|Fraunces|Inter["']/);
-    expect(existsSync("fonts/SourceSans3-Regular.ttf")).toBe(true);
-    expect(existsSync("fonts/SourceSerif4-Regular.ttf")).toBe(true);
-    expect(existsSync("fonts/SourceSerif4-Italic.ttf")).toBe(true);
+    expect(compositor).toMatch(/34 \/ 255,\s*32 \/ 255,\s*27 \/ 255/);
+    expect(compositor).toMatch(/242 \/ 255,\s*183 \/ 255,\s*5 \/ 255/);
+    expect(compositor).toMatch(/AtkinsonHyperlegibleNext-Regular\.ttf/);
+    expect(compositor).toMatch(/AtkinsonHyperlegibleNext-Bold\.ttf/);
+    expect(compositor).toMatch(/AtkinsonHyperlegibleNext-ExtraBold\.ttf/);
+    expect(compositor).toMatch(/drawSvgPath\(NAMEPLATE_PATH/);
+    expect(compositor).not.toMatch(/StandardFonts|Helvetica|Source(?:Sans|Serif)|Playfair|Fraunces|Inter["']/);
+    expect(compositor).not.toMatch(/toUpperCase/);
+    // One column at a reading measure: no newspaper columns in print either.
+    expect(compositor).not.toMatch(/body_flow === "two"|colWidth/);
+    expect(existsSync("fonts/AtkinsonHyperlegibleNext-Regular.ttf")).toBe(true);
+    expect(existsSync("fonts/SourceSerif4-Regular.ttf")).toBe(false);
   });
-
   it("keeps the compositor off the client Read module", () => {
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
     const helpers = readFileSync("src/lib/print.ts", "utf8");
@@ -175,39 +168,24 @@ describe("Print this issue", () => {
     expect(read).toMatch(/from "\.\.\/lib\/print-bound"/);
   });
 
-  it("sits in stage chrome, not a filled pill on the paper", () => {
+  it("sits in the app bar, outside the paper, as a quiet button", () => {
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
+    const bar = read.indexOf('className={isFront ? "appbar is-front" : "appbar"}');
+    const printAt = read.indexOf('className="link-btn print"');
+    const paperAt = read.indexOf('<div className="paper">');
+    expect(bar).toBeGreaterThan(-1);
+    expect(printAt).toBeGreaterThan(bar);
+    expect(printAt).toBeLessThan(paperAt);
+    expect(read).toMatch(/printThisIssue/);
     const css = readFileSync("src/styles.css", "utf8");
-    const chromeStart = read.indexOf("stage-chrome");
-    const wellStart = read.indexOf("stage-well");
-    const printAt = read.indexOf("stage-print");
-    const sheetAt = read.indexOf('className={sheetClass}');
-    expect(chromeStart).toBeGreaterThan(-1);
-    expect(printAt).toBeGreaterThan(chromeStart);
-    expect(printAt).toBeLessThan(wellStart);
-    expect(printAt).toBeLessThan(sheetAt);
-    expect(read).toMatch(/<nav className="stage-chrome">/);
-    expect(read).toMatch(/className="stage-print"/);
-    expect(read).not.toMatch(/className="sheet[^"]*"[^>]*>[\s\S]*stage-print/);
-    expect(css).toMatch(/\.stage-print \{[\s\S]*background:\s*transparent/);
-    expect(css).not.toMatch(/\.sheet[^{]*\{[^}]*\.stage-print/);
-    expect(css).not.toMatch(/\.sheet[\s\S]{0,200}button \{[\s\S]{0,80}background:\s*var\(--binding\)/);
+    expect(css).toMatch(/\.link-btn \{[\s\S]*background: none/);
   });
-
-  it("does not restyle Select, SI, or add a third font / flipbook export", () => {
+  it("keeps Print off the Desk and adds no flipbook export", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
-    const css = readFileSync("src/styles.css", "utf8");
-    const root = readFileSync("src/routes/__root.tsx", "utf8");
     const pkg = readFileSync("package.json", "utf8");
-    const families = [...root.matchAll(/family=([^:&]+)/g)].map((match) => match[1]);
-    expect(keep).toMatch(/className="site-masthead"/);
     expect(keep).toMatch(/className="keep"/);
     expect(keep).toMatch(/createIssueLabel/);
     expect(keep).not.toMatch(/printThisIssue|className="stage"/);
-    expect(css).toMatch(/--paper: #faf7f1;/);
-    expect(css).toMatch(/--ink: #1c1814;/);
-    expect(css).toMatch(/--binding: #4a5c56;/);
-    expect(families).toEqual(["Source+Sans+3", "Source+Serif+4"]);
     expect(pkg).toMatch(/"pdf-lib"/);
     expect(pkg).not.toMatch(/pdfjs|react-pdf|page-flip|stpageflip|react-pageflip|issuu/i);
     expect(keep).not.toMatch(/getClipIntelligenceState|\/reliability/);

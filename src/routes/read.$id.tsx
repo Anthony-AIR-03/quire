@@ -1,13 +1,35 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import {
+  boundFromDesk,
   continueReadingLabel,
+  contentsKicker,
+  contentsLabel,
   couldNotFetchWords,
   couldNotPrint,
+  fromSource,
+  frontPageLabel,
+  frontPageOf,
+  goThere,
+  issueMissing,
+  keptPieceLabel,
+  motto,
+  nextLabel,
+  pageOf,
+  previousLabel,
   printThisIssue,
   productName,
+  readFullPiece,
+  readingSettingsLabel,
+  readingSettingsShort,
+  readOriginalAt,
+  resumeNote,
+  resumeOnPage,
   stanceCopy,
+  takeLabel,
+  welcomeBack,
+  wordsFetched,
 } from "../copy";
 import { issueFromKeptWords } from "../lib/bind";
 import { fetchArticleWords } from "../lib/article";
@@ -19,25 +41,48 @@ import {
   pieceSheetIndex,
   previousSheetIndex,
   readingSheets,
+  type ContentsRow,
+  type PagePlan,
+  type ReadingSheet,
   type SequenceSheet,
   type SheetFigure,
 } from "../lib/compose";
+import {
+  issueNumber,
+  longDate,
+  minutesCopy,
+  openingParagraphs,
+  piecesCopy,
+  readingMinutes,
+  shortDate,
+} from "../lib/edition";
+import { hostnameOf } from "../lib/kept";
 import { qrMatrix } from "../lib/qr";
 import { composeBoundPrint } from "../lib/print-bound";
 import { offerPrint, paperNameFor } from "../lib/print";
-import { clipStore, issueStore } from "../lib/store";
+import { clipStore, issueStore, listIssues } from "../lib/store";
 import { bookmarkStore } from "../lib/bookmark";
 import { blockMatches, blockStart, resumeSheet, type SavedPlace } from "../lib/place";
-import { QuireMark } from "../mark";
+import { Icon, stanceIcon } from "../icons";
+import { Nameplate, OxfordRule } from "../mark";
+import { ReadingSettingsPanel } from "../reading-settings";
 
-const TURN_MS = 280;
+/** A short fade between pages; nothing moves (moving text is harder to track). */
+const TURN_MS = 220;
 
 const loadIssue = createServerFn({ method: "GET" })
   .validator((data: { id: string }) => data)
   .handler(async ({ data }) => {
     const issues = await issueStore();
     const bound = await issues.get(data.id);
-    if (bound) return { bound: true as const, issue: bound, bookmark: await readBookmark(data.id) };
+    if (bound) {
+      return {
+        bound: true as const,
+        issue: bound,
+        number: issueNumber(await listIssues(), data.id),
+        bookmark: await readBookmark(data.id),
+      };
+    }
     const clip = await (await clipStore()).get(data.id);
     if (!clip) return { bound: false as const, issue: null };
     try {
@@ -97,11 +142,16 @@ function ReadIssue() {
   const payload = Route.useLoaderData();
   const issue = payload?.issue ?? null;
   const bound = payload?.bound === true;
+  const number = payload && "number" in payload ? (payload.number ?? null) : null;
   const [index, setIndex] = useState(0);
   const [turning, setTurning] = useState(false);
   const [printing, setPrinting] = useState(false);
   const [printError, setPrintError] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [bookmark, setBookmark] = useState<SavedPlace | null>(payload?.bookmark ?? null);
+  // The place saved before this visit: the ribbon marks it, and it does not follow the scroll.
+  const [arrivedAt] = useState<SavedPlace | null>(payload?.bookmark ?? null);
+  const [resumed, setResumed] = useState(false);
   const timer = useRef<number | null>(null);
   const saving = useRef<Promise<unknown>>(Promise.resolve());
   const pendingBlock = useRef<SavedPlace | null>(null);
@@ -151,39 +201,50 @@ function ReadIssue() {
     }
   }, [index, turning]);
 
+  // Arrow keys turn the page.
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable]")) return;
+      if (event.key === "ArrowRight") document.querySelector<HTMLButtonElement>(".turn .next")?.click();
+      if (event.key === "ArrowLeft") document.querySelector<HTMLButtonElement>(".turn .prev")?.click();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   if (!issue) {
     return (
-      <main className="stage">
-        <nav className="stage-chrome">
-          <Link to="/" aria-label={productName}>
-            <QuireMark />
+      <main>
+        <header className="appbar">
+          <Link className="home" to="/">
+            <Nameplate label="Quire, back to the Desk" />
           </Link>
-        </nav>
-        <p className="stage-empty">{payload?.fail ?? "That issue is not here."}</p>
+        </header>
+        <p className="page-fail status fail" role="alert">
+          <Icon name="alert" />
+          <span>{payload?.fail ?? issueMissing}</span>
+        </p>
       </main>
     );
   }
 
   const boundId = issue.id;
   const page = composeIssue(issue);
-  const sheets = readingSheets(page);
+  const front = bound;
+  const sheets = readingSheets(page, { front });
   const last = sheets.length - 1;
   const current = sheets[clampSheetIndex(index, sheets.length)] ?? sheets[0];
   const piece = current?.kind === "piece" ? page.sequence[current.index] : undefined;
-  const kind = current?.kind === "piece" ? "piece" : (current?.kind ?? "cover");
-  const sheetClass = [
-    "sheet",
-    kind === "cover" ? "sheet-cover" : kind === "contents" ? "sheet-contents" : "sheet-piece",
-    turning ? "is-turning" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const resumeAt = index === 0 ? resumeSheet(bookmark, sheets.length) : null;
+  const isFront = current?.kind === "front";
+  const resumeAt = !resumed && index === 0 ? resumeSheet(bookmark, sheets.length) : null;
+  const total = sheets.length;
 
   function goTo(target: number) {
     const next = clampSheetIndex(target, sheets.length);
     if (next === index || turning) return;
+    setResumed(true);
     queueSave({ sheet: next, block: null, start: null });
     turnTo(next);
   }
@@ -191,21 +252,36 @@ function ReadIssue() {
   /** Continue: go back to the saved sheet and paragraph without moving the bookmark. */
   function resume(place: SavedPlace) {
     if (turning) return;
+    setResumed(true);
     pendingBlock.current = place;
-    turnTo(clampSheetIndex(place.sheet, sheets.length));
+    const next = clampSheetIndex(place.sheet, sheets.length);
+    if (next === index) {
+      setIndex(next);
+      const target = document.querySelector<HTMLElement>(`[data-block="${place.block}"]`);
+      if (target && blockMatches(target.textContent ?? "", place.start)) {
+        target.scrollIntoView({ block: "start" });
+      }
+      pendingBlock.current = null;
+      return;
+    }
+    turnTo(next);
   }
 
   function turnTo(next: number) {
+    const land = () => {
+      setIndex(next);
+      if (!pendingBlock.current) window.scrollTo(0, 0);
+    };
     const quiet =
       typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (quiet) {
-      setIndex(next);
+      land();
       return;
     }
     setTurning(true);
     if (timer.current !== null) window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => {
-      setIndex(next);
+      land();
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setTurning(false);
@@ -234,193 +310,393 @@ function ReadIssue() {
       .finally(() => setPrinting(false));
   }
 
+  function sheetTitle(sheet: ReadingSheet | undefined) {
+    if (!sheet) return "";
+    return sheet.kind === "front" ? frontPageLabel : (page.sequence[sheet.index]?.headline ?? "");
+  }
+
+  const issueName = number ? `Issue No. ${number}` : productName;
+  const where = !bound
+    ? keptPieceLabel
+    : isFront
+      ? `${issueName}, front page`
+      : `${issueName}, ${pageOf(index + 1, total).toLowerCase()}`;
+  const folio = isFront ? frontPageOf(total) : bound ? pageOf(index + 1, total) : keptPieceLabel;
+  const stoppedBlock =
+    arrivedAt && arrivedAt.sheet === index && arrivedAt.block !== null ? arrivedAt : null;
+
   return (
-    <main className="stage">
-      <nav className="stage-chrome">
-        <Link to="/" aria-label={productName}>
-          <QuireMark />
-        </Link>
-        <div className="stage-tools">
-          <div className="stage-turn">
-            <button
-              type="button"
-              disabled={index <= 0 || turning}
-              onClick={() => goTo(previousSheetIndex(index, sheets.length))}
-            >
-              Previous
-            </button>
-            <span>
-              {String(index + 1).padStart(2, "0")} / {String(sheets.length).padStart(2, "0")}
-            </span>
-            <button
-              type="button"
-              disabled={index >= last || turning}
-              onClick={() => goTo(nextSheetIndex(index, sheets.length))}
-            >
-              Next
-            </button>
-          </div>
-          {resumeAt !== null ? (
-            <button
-              type="button"
-              className="stage-resume"
-              disabled={turning}
-              onClick={() => bookmark && resume(bookmark)}
-            >
-              {continueReadingLabel(
-                `${String(resumeAt + 1).padStart(2, "0")} / ${String(sheets.length).padStart(2, "0")}`,
-              )}
+    <main>
+      <header className={isFront ? "appbar is-front" : "appbar"}>
+        {isFront ? null : (
+          <Link className="home" to="/">
+            <Nameplate label="Quire, back to the Desk" />
+          </Link>
+        )}
+        <span className="where">{where}</span>
+        <div className="tools">
+          {bound && !isFront ? (
+            <button type="button" className="link-btn" onClick={() => goTo(0)}>
+              <Icon name="list" />
+              {contentsLabel}
             </button>
           ) : null}
+          <button
+            type="button"
+            className="link-btn"
+            aria-expanded={settingsOpen}
+            aria-controls="reading-settings"
+            onClick={() => setSettingsOpen((open) => !open)}
+          >
+            <Icon name="text" />
+            <span className="long">{readingSettingsLabel}</span>
+            <span className="short">{readingSettingsShort}</span>
+          </button>
           {bound ? (
-            <button type="button" className="stage-print" disabled={printing} onClick={printBound}>
+            <button type="button" className="link-btn print" disabled={printing} onClick={printBound}>
+              <Icon name="print" />
               {printThisIssue}
             </button>
           ) : null}
         </div>
-      </nav>
-      {printError ? <p className="stage-empty">{printError}</p> : null}
-      <div className="stage-well">
+      </header>
+      <ReadingSettingsPanel id="reading-settings" open={settingsOpen} />
+      {printError ? (
+        <p className="page-fail status fail" role="alert">
+          <Icon name="alert" />
+          <span>{printError}</span>
+        </p>
+      ) : null}
+
+      <div className="paper">
         <article
-          className={sheetClass}
-          data-sheet={kind}
+          className={[
+            "sheet",
+            isFront ? "sheet-front" : "sheet-piece",
+            turning ? "is-turning" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          data-sheet={isFront ? "front" : "piece"}
           data-treatment={piece?.intent.treatment}
-          data-composition={piece?.intent.composition}
-          data-flow={piece?.intent.body_flow}
         >
-          {current?.kind === "cover" ? (
-            <>
-              {page.cover.figure ? <SheetPhoto figure={page.cover.figure} /> : null}
-              <div className="cover-content">
-                {page.cover.kicker ? <p className="kicker">{page.cover.kicker}</p> : null}
-                <p className="masthead">{page.cover.masthead}</p>
-                <div className="accent-rule" />
-                <h1>{page.cover.title}</h1>
-                {page.cover.lead ? <p className="cover-lead">{page.cover.lead}</p> : null}
-                {page.cover.meta ? <p className="cover-meta">{page.cover.meta}</p> : null}
-              </div>
-            </>
+          {isFront ? (
+            <FrontPage
+              page={page}
+              issueName={issueName}
+              createdAt={issue.createdAt}
+              total={total}
+              resume={
+                resumeAt !== null && bookmark ? (
+                  <Resume
+                    note={resumeNote(resumeAt + 1)}
+                    action={continueReadingLabel(resumeAt + 1, total)}
+                    onResume={() => resume(bookmark)}
+                  />
+                ) : null
+              }
+              onOpen={(pieceIndex) => goTo(pieceSheetIndex(pieceIndex, { front }))}
+            />
           ) : null}
-          {current?.kind === "contents" ? (
-            <>
-              <div className="running-head">
-                <span>{productName}</span>
-                <span className="folio">{page.contents.folio}</span>
-              </div>
-              <div className="contents-heading">
-                <p className="kicker">{page.contents.kicker}</p>
-                <h2>{page.contents.title}</h2>
-              </div>
-              <ol className="contents-list">
-                {page.contents.rows.map((row, rowIndex) =>
-                  row.absent ? (
-                    <li key={`absent-${row.title}`}>
-                      <p className="toc-absent">{row.title}</p>
-                    </li>
-                  ) : (
-                    <li key={row.folio}>
-                      <button type="button" className="toc-row" onClick={() => goTo(pieceSheetIndex(rowIndex))}>
-                        <span className="toc-copy">
-                          {row.stance ? (
-                            <span className={row.stance === "inconclusive" ? "toc-stance quiet" : "toc-stance"}>
-                              {stanceCopy(row.stance)}
-                            </span>
-                          ) : null}
-                          <p className="toc-title">{row.title}</p>
-                        </span>
-                        <span className="toc-dots" aria-hidden />
-                        <span className="folio">{row.folio}</span>
-                      </button>
-                    </li>
-                  ),
-                )}
-              </ol>
-            </>
+          {piece ? (
+            <PieceSheet
+              sheet={piece}
+              stance={current?.kind === "piece" ? page.contents.rows[current.index]?.stance : undefined}
+              pageLabel={bound ? `Page ${index + 1}` : keptPieceLabel}
+              boundOn={bound ? shortDate(issue.createdAt) : ""}
+              stopped={stoppedBlock}
+              resume={
+                resumeAt !== null && bookmark && !bound ? (
+                  <Resume note={resumeOnPage} action={goThere} onResume={() => resume(bookmark)} />
+                ) : null
+              }
+            />
           ) : null}
-          {piece ? <PieceSheet sheet={piece} /> : null}
         </article>
       </div>
+
+      {sheets.length > 1 ? (
+        <nav className="turn" aria-label="Turn the page">
+          <div className="turn-inner">
+            {index > 0 ? (
+              <button
+                type="button"
+                className="prev"
+                disabled={turning}
+                onClick={() => goTo(previousSheetIndex(index, sheets.length))}
+              >
+                <span>
+                  <Icon name="left" /> {previousLabel}
+                </span>
+                <strong>{sheetTitle(sheets[index - 1])}</strong>
+              </button>
+            ) : (
+              <span />
+            )}
+            <span className="folio">{folio}</span>
+            {index < last ? (
+              <button
+                type="button"
+                className="next"
+                disabled={turning}
+                onClick={() => goTo(nextSheetIndex(index, sheets.length))}
+              >
+                <span>
+                  {nextLabel} <Icon name="right" />
+                </span>
+                <strong>{sheetTitle(sheets[index + 1])}</strong>
+              </button>
+            ) : (
+              <span />
+            )}
+          </div>
+        </nav>
+      ) : null}
     </main>
   );
 }
 
+function Resume({ note, action, onResume }: { note: string; action: string; onResume: () => void }) {
+  return (
+    <div className="resume" role="status">
+      <span>
+        <strong>{welcomeBack}</strong> {note}
+      </span>
+      <button type="button" className="link-btn" onClick={onResume}>
+        {action}
+      </button>
+    </div>
+  );
+}
+
+function Stance({ stance }: { stance: ContentsRow["stance"] }) {
+  if (!stance) return null;
+  return (
+    <p className="stance">
+      <Icon name={stanceIcon[stance]} />
+      {stanceCopy(stance)}
+    </p>
+  );
+}
+
+function FrontPage({
+  page,
+  issueName,
+  createdAt,
+  total,
+  resume,
+  onOpen,
+}: {
+  page: PagePlan;
+  issueName: string;
+  createdAt: string;
+  total: number;
+  resume: ReactNode;
+  onOpen: (pieceIndex: number) => void;
+}) {
+  const [lead, ...rest] = page.sequence;
+  if (!lead) return null;
+  const minutes = readingMinutes(page.sequence);
+  const opening = openingParagraphs(lead.paragraphs);
+  const absent = page.contents.rows.filter((row) => row.absent);
+
+  return (
+    <>
+      <header className="masthead">
+        <div className="masthead-row">
+          <p className="ear">
+            <strong>{issueName}</strong>Bound {shortDate(createdAt)}
+          </p>
+          <h1 className="visually-hidden">{productName}</h1>
+          <Nameplate />
+          <p className="ear ear-right">
+            <strong>{piecesCopy(page.sequence.length)}</strong>
+            {minutesCopy(minutes)}
+          </p>
+        </div>
+        <p className="ears-inline">
+          {issueName} · {piecesCopy(page.sequence.length)} · {minutesCopy(minutes).toLowerCase()}
+        </p>
+        <OxfordRule />
+        <p className="dateline">
+          <span>{longDate(createdAt)}</span>
+          <span>{motto}</span>
+        </p>
+        {rest.length > 0 ? (
+          <ul className="skyline" aria-label="Also inside">
+            {rest.map((sheet, at) => (
+              <li key={sheet.url}>
+                <button type="button" onClick={() => onOpen(at + 1)}>
+                  <strong>{sheet.headline}</strong>
+                  <span className="skyline-meta">
+                    {page.contents.rows[at + 1]?.stance
+                      ? `${stanceCopy(page.contents.rows[at + 1]!.stance!)} · `
+                      : ""}
+                    <span className="page-link">Page {pieceSheetIndex(at + 1, { front: true }) + 1}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </header>
+
+      {resume}
+
+      <section className="lead" aria-labelledby="lead-headline">
+        <h2 id="lead-headline" className="lead-title">
+          <button type="button" className="headline-link" onClick={() => onOpen(0)}>
+            {lead.headline}
+          </button>
+        </h2>
+        {lead.standfirst ? <p className="standfirst">{lead.standfirst}</p> : null}
+        {lead.sourceLine ? <p className="byline">{lead.sourceLine}</p> : null}
+        <div className={lead.figure ? "lead-grid" : "lead-grid no-figure"}>
+          {lead.figure ? <SheetPhoto figure={lead.figure} /> : null}
+          <div className="opening">
+            {opening.map((text, at) => (
+              <p key={at}>{text}</p>
+            ))}
+            <button type="button" className="btn" onClick={() => onOpen(0)}>
+              {readFullPiece}
+              <Icon name="right" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {rest.length > 0 || absent.length > 0 ? (
+        <section aria-labelledby="inside-heading">
+          <div className="section-head">
+            <h2 id="inside-heading">{contentsKicker}</h2>
+            <span className="small muted">{`Pages 3 to ${total}`}</span>
+          </div>
+          <ol className="inside">
+            {rest.map((sheet, at) => (
+              <li key={sheet.url}>
+                <h3>
+                  <button type="button" className="headline-link" onClick={() => onOpen(at + 1)}>
+                    {sheet.headline}
+                  </button>
+                </h3>
+                <Stance stance={page.contents.rows[at + 1]?.stance} />
+                {sheet.sourceLine ? <p className="meta">{sheet.sourceLine}</p> : null}
+                <button type="button" className="page-no" onClick={() => onOpen(at + 1)}>
+                  Page {pieceSheetIndex(at + 1, { front: true }) + 1}
+                </button>
+              </li>
+            ))}
+            {absent.map((row) => (
+              <li key={row.title}>
+                <p className="absent">{row.title}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
+      <footer className="colophon">
+        <span>
+          {productName} · {issueName} · {frontPageLabel}
+        </span>
+        <span>{boundFromDesk}</span>
+      </footer>
+    </>
+  );
+}
+
 function pieceBlocks(sheet: SequenceSheet): BodyBlock[] {
-  if (sheet.blocks?.length) {
-    if (sheet.intent.composition === "quote-led" && sheet.pullQuotes?.[0]) {
-      const leadQuote = sheet.pullQuotes[0];
-      let skipped = false;
-      return sheet.blocks.filter((block) => {
-        if (!skipped && block.kind === "pullQuote" && block.text === leadQuote) {
-          skipped = true;
-          return false;
-        }
-        return true;
-      });
-    }
-    return sheet.blocks;
-  }
+  if (sheet.blocks?.length) return sheet.blocks;
   return sheet.paragraphs.map((text) => ({ kind: "paragraph" as const, text }));
 }
 
-function PieceSheet({ sheet }: { sheet: SequenceSheet }) {
+function PieceSheet({
+  sheet,
+  stance,
+  pageLabel,
+  boundOn,
+  stopped,
+  resume,
+}: {
+  sheet: SequenceSheet;
+  stance: ContentsRow["stance"];
+  pageLabel: string;
+  boundOn: string;
+  stopped: SavedPlace | null;
+  resume: ReactNode;
+}) {
   const screening = sheet.intent.treatment === "screening";
-  const opener = sheet.intent.composition === "visual-opener" && sheet.figure;
-  const quote = sheet.intent.composition === "quote-led" ? sheet.pullQuotes?.[0] : undefined;
   const blocks = pieceBlocks(sheet);
-  const firstLong = blocks.findIndex((block) => block.kind === "paragraph" && block.text.length > 80);
+  const lastParagraph = blocks.map((block) => block.kind).lastIndexOf("paragraph");
+  const host = hostnameOf(sheet.url);
+  const source = sheet.sourceLine?.split(" · ")[0] || host;
+
   return (
     <>
-      <div className="running-head">
-        <span>{productName}</span>
-        <span className="folio">{sheet.folio}</span>
+      <p className="band">
+        <span>
+          <strong>{pageLabel}</strong> · {fromSource(source)}
+        </span>
+        <a href={sheet.url} target="_blank" rel="noreferrer">
+          {host}
+          <Icon name="out" />
+        </a>
+      </p>
+      {resume}
+      <div className="article">
+        <header className="article-head">
+          <h1>{sheet.headline}</h1>
+          {sheet.standfirst ? <p className="standfirst">{sheet.standfirst}</p> : null}
+          {sheet.sourceLine ? <p className="byline">{sheet.sourceLine}</p> : null}
+          <Stance stance={stance} />
+        </header>
+        {sheet.figure ? <SheetPhoto figure={sheet.figure} /> : null}
+        {sheet.take ? (
+          <aside className="note-box">
+            <h2>{takeLabel}</h2>
+            <p>{sheet.take.text}</p>
+          </aside>
+        ) : null}
+        <div className="article-body">
+          {blocks.map((block, index) =>
+            block.kind === "subhead" ? (
+              <h2 key={`h-${index}`}>{block.text}</h2>
+            ) : block.kind === "pullQuote" ? (
+              <blockquote key={`q-${index}`} className="pull">
+                <p>{`“${block.text}”`}</p>
+              </blockquote>
+            ) : (
+              <p
+                key={`p-${index}`}
+                data-block={index}
+                className={
+                  stopped?.block === index && blockMatches(block.text, stopped.start) ? "stopped" : undefined
+                }
+              >
+                {block.text}
+                {index === lastParagraph ? <span className="end-mark" aria-hidden="true" /> : null}
+              </p>
+            ),
+          )}
+        </div>
+        {screening && sheet.videoUrl ? <SheetQr url={sheet.videoUrl} /> : null}
+        <p className="source-foot">
+          {wordsFetched(boundOn)} {readOriginalAt} <a href={sheet.url}>{host}</a>.
+        </p>
       </div>
-      {quote ? (
-        <blockquote className="pull-quote">
-          <p>{quote}</p>
-        </blockquote>
-      ) : null}
-      {opener ? <SheetPhoto figure={sheet.figure!} /> : null}
-      <header className="piece-header">
-        <h2>{sheet.headline}</h2>
-      </header>
-      {!opener && sheet.figure ? <SheetPhoto figure={sheet.figure} /> : null}
-      {sheet.take ? (
-        <aside className="take">
-          <p>{sheet.take.text}</p>
-        </aside>
-      ) : null}
-      <div className={screening ? "piece-body briefing" : "piece-body"}>
-        {blocks.map((block, index) =>
-          block.kind === "subhead" ? (
-            <h3 key={`${sheet.folio}-h-${index}`}>{block.text}</h3>
-          ) : block.kind === "pullQuote" ? (
-            <blockquote key={`${sheet.folio}-q-${index}`} className="pull-quote">
-              <p>{block.text}</p>
-            </blockquote>
-          ) : (
-            <p
-              key={`${sheet.folio}-${index}`}
-              data-block={index}
-              className={!screening && index === firstLong ? "drop" : undefined}
-            >
-              {block.text}
-            </p>
-          ),
-        )}
-      </div>
-      {screening && sheet.videoUrl ? <SheetQr url={sheet.videoUrl} /> : null}
-      {sheet.colophon ? <p className="colophon">{sheet.colophon}</p> : null}
     </>
   );
 }
 
 function SheetPhoto({ figure }: { figure: SheetFigure }) {
   return (
-    <figure className={figure.fit === "cover" ? "sheet-figure cover" : "sheet-figure contain"}>
-      <img src={figure.url} alt="" />
+    <figure>
+      <div className="figure-frame">
+        <img src={figure.url} alt="" />
+      </div>
       {figure.caption || figure.credit ? (
         <figcaption>
-          {figure.caption ? <span>{figure.caption}</span> : null}
+          {figure.caption ? <span>{figure.caption} </span> : null}
           {figure.credit ? <span className="credit">{figure.credit}</span> : null}
         </figcaption>
       ) : null}

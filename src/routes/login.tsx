@@ -1,7 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { keepHint, kicker, productName } from "../copy";
+import { signInTitle } from "../copy";
 import { authClient } from "../lib/auth-client";
+import { Icon } from "../icons";
+import { Nameplate, OxfordRule } from "../mark";
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -9,37 +11,59 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const [message, setMessage] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
 
   return (
-    <main>
-      <nav>
-        <Link to="/">{productName}</Link>
-      </nav>
-      <p className="kicker">{kicker}</p>
-      <h1>Owner sign in</h1>
-      <p className="empty">{keepHint}</p>
+    <main className="signin">
+      <Nameplate />
+      <OxfordRule />
+      <h1>{signInTitle}</h1>
       <form
         onSubmit={(event) => {
           event.preventDefault();
+          if (signingIn) return;
           const form = new FormData(event.currentTarget);
           const email = String(form.get("email") ?? "");
           const password = String(form.get("password") ?? "");
-          authClient.signIn.email({ email, password }).then((result) => {
-            if (result.error) {
-              setMessage(result.error.message ?? "Could not sign in.");
-              return;
-            }
-            window.location.assign("/");
-          });
+          setSigningIn(true);
+          setMessage("");
+          authClient.signIn
+            .email({ email, password })
+            .then((result) => {
+              if (result.error) {
+                setMessage(result.error.message ?? "Could not sign in. Check your email and password.");
+                return;
+              }
+              window.location.assign("/");
+            })
+            .finally(() => setSigningIn(false));
         }}
       >
-        <label htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" required />
-        <label htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" required />
-        <button type="submit">Sign in</button>
+        <div className="field">
+          <label htmlFor="email">Email address</label>
+          <input id="email" name="email" type="email" autoComplete="username" required />
+        </div>
+        <div className="field">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            aria-describedby={message ? "signin-error" : undefined}
+            required
+          />
+        </div>
+        {message ? (
+          <p className="form-error" id="signin-error" role="alert">
+            <Icon name="alert" />
+            <span>{message}</span>
+          </p>
+        ) : null}
+        <button className="btn btn-primary" type="submit" disabled={signingIn} aria-busy={signingIn}>
+          {signingIn ? "Signing in…" : "Sign in"}
+        </button>
       </form>
-      <p className="note">{message}</p>
     </main>
   );
 }
