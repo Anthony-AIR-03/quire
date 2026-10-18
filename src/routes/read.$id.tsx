@@ -26,7 +26,8 @@ import { qrMatrix } from "../lib/qr";
 import { composeBoundPrint } from "../lib/print-bound";
 import { offerPrint, paperNameFor } from "../lib/print";
 import { clipStore, issueStore } from "../lib/store";
-import { blockMatches, blockStart, bookmarkStore, resumeSheet, type SavedPlace } from "../lib/bookmark";
+import { bookmarkStore } from "../lib/bookmark";
+import { blockMatches, blockStart, resumeSheet, type SavedPlace } from "../lib/place";
 import { QuireMark } from "../mark";
 
 const TURN_MS = 280;
