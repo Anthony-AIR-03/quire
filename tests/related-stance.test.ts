@@ -985,7 +985,9 @@ describe("Keep timing", () => {
     for (const step of ["source", "understand", "searchStrings", "judge"] as const) {
       expect(timing[step]).toBeGreaterThanOrEqual(15);
     }
-    expect(timing.search).toBeGreaterThanOrEqual(35);
+    // Two 20 ms searches run together: wall time, not 40 ms.
+    expect(timing.search).toBeGreaterThanOrEqual(15);
+    expect(timing.search).toBeLessThan(38);
     expect(timing.total).toBeGreaterThanOrEqual(
       timing.source + timing.understand + timing.searchStrings + timing.search + timing.judge - 1,
     );
