@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   boundNote,
   couldNotUnderstand,
   createIssueLabel,
   emptyState,
   inLabel,
+  keepProgressCopy,
   keptNote,
   moreOnThisTopic,
   moreOnThisTopicCopy,
@@ -29,6 +30,8 @@ import {
   hostnameOf,
   keptFigure,
   keptHeading,
+  keepProgress,
+  deskEnriching,
   keptSnippet,
   paperBadgeLabel,
   relatedCollapsed,
@@ -36,7 +39,7 @@ import {
   relatedRow,
   relatedVisible,
 } from "../lib/kept";
-import { formatKeepTiming, saveClip, type Clip } from "../lib/save";
+import { enrichClip, formatKeepTiming, keepClip, type Clip } from "../lib/save";
 import { chosenFromBoard, chosenPieces, defaultBindChoice, type BindChoice } from "../lib/select";
 import {
   clipStore,
@@ -60,10 +63,14 @@ const keepUrl = createServerFn({ method: "POST" })
   .validator((data: { url: string }) => data)
   .handler(async ({ data }) => {
     const store = await clipStore();
-    const clip = await saveClip({ url: data.url }, store, {
+    const clip = await keepClip({ url: data.url }, store);
+    // Answer now; the card fills in while the desk polls. A long-running Node
+    // server finishes this; a host that freezes after the response leaves the
+    // card "stalled" (keepProgress) instead of hanging the request.
+    void enrichClip(clip, store, {
       searchPages: resolveSearchPages(),
       onTiming: (timing) => console.info(formatKeepTiming(timing)),
-    });
+    }).catch((error: unknown) => console.error("Keep enrichment failed", error));
     return { note: keptNote, clip };
   });
 
@@ -116,6 +123,14 @@ function Home() {
   const [binding, setBinding] = useState(false);
   const [choices, setChoices] = useState<Record<string, BindChoice>>({});
   const [bindError, setBindError] = useState("");
+  const enriching = deskEnriching(clips);
+
+  // Keep answers before the card is read; reload until every card has filled in.
+  useEffect(() => {
+    if (!enriching) return;
+    const timer = setInterval(() => void router.invalidate(), 2000);
+    return () => clearInterval(timer);
+  }, [enriching, router]);
 
   const board = useMemo(
     () =>
@@ -335,6 +350,7 @@ function BindCard({
   const snippet = keptSnippet(clip.sourceHeadline);
   const figure = keptFigure(clip.sourceHeadline);
   const keptOn = clip.savedAt.slice(0, 10);
+  const progress = keepProgress(clip);
   const topic = clip.understanding?.status === "ok" ? clip.understanding.topic : "";
   const headlineSpoken =
     clip.sourceHeadline && clip.sourceHeadline.status !== "ok"
@@ -374,6 +390,11 @@ function BindCard({
         </p>
       ) : null}
       <UnderstandingFail clip={clip} />
+      {progress ? (
+        <p className={progress === "stalled" ? "fail" : "empty"} role="status">
+          {keepProgressCopy[progress]}
+        </p>
+      ) : null}
       <p className="actions">
         <button
           type="button"
