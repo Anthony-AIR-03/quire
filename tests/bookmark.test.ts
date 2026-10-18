@@ -150,4 +150,12 @@ describe("Read surface", () => {
     expect(read).toMatch(/resumeSheet\(/);
     expect(read).toMatch(/continueReadingLabel\(/);
   });
+
+  it("takes its browser helpers from place.ts, which never touches the database", () => {
+    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
+    const place = readFileSync("src/lib/place.ts", "utf8");
+    expect(read).toMatch(/import \{ bookmarkStore \} from "\.\.\/lib\/bookmark";/);
+    expect(read).toMatch(/from "\.\.\/lib\/place";/);
+    expect(place).not.toMatch(/^import /m);
+  });
 });
