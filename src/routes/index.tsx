@@ -2,22 +2,35 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import {
+  addToIssue,
   boundNote,
+  chosenCount,
+  chosenDetail,
   couldNotUnderstand,
   createIssueLabel,
+  deskCount,
+  deskInstruction,
+  deskLabel,
   emptyState,
   inLabel,
+  keepIssueLabel,
+  keepLinkHint,
+  keepLinkLabel,
   keepProgressCopy,
   keptNote,
   moreOnThisTopic,
   moreOnThisTopicCopy,
   nothingMoreOnTopic,
   nothingSelected,
-  railAbsentCopy,
-  stanceCopy,
-  pressCoverMeta,
+  notStarted,
+  pressCount,
   pressEmpty,
+  pressInstruction,
   pressLabel,
+  railAbsentCopy,
+  readingSettingsLabel,
+  readingSettingsShort,
+  readToPage,
   removeIssueAsk,
   removeLabel,
   removePiecesTooLabel,
@@ -25,8 +38,11 @@ import {
   signOutLabel,
   sourceHeadlineCopy,
   sourceLabel,
+  stanceCopy,
+  yourDeskLabel,
 } from "../copy";
 import { createIssue, type BoundIssue } from "../lib/bind";
+import { issueNumber, longDate, minutesCopy, piecesCopy, readingMinutes, shortDate } from "../lib/edition";
 import {
   hostnameOf,
   keptFigure,
@@ -55,12 +71,28 @@ import {
 import { resolveSearchPages } from "../lib/search";
 import type { RelatedPage } from "../lib/related";
 import { slotState } from "../lib/related-stance";
-import { QuireMark } from "../mark";
+import { Icon, stanceIcon } from "../icons";
+import { Nameplate, OxfordRule } from "../mark";
+import { ReadingSettingsPanel } from "../reading-settings";
 
 const loadHome = createServerFn({ method: "GET" }).handler(async () => {
-  const [clips, issues] = await Promise.all([listClips(), listIssues()]);
-  return { clips, issues };
+  const [clips, issues, progress] = await Promise.all([listClips(), listIssues(), readingProgress()]);
+  return { clips, issues, progress };
 });
+
+/** The sheet this reader reached in each bound issue. Progress never stops the Desk from loading. */
+async function readingProgress(): Promise<Record<string, number>> {
+  try {
+    const [{ currentReaderId }, { bookmarkStore }] = await Promise.all([
+      import("../lib/reader"),
+      import("../lib/bookmark"),
+    ]);
+    const bookmarks = await (await bookmarkStore()).forReader(await currentReaderId());
+    return Object.fromEntries(bookmarks.map((bookmark) => [bookmark.itemId, bookmark.sheet]));
+  } catch {
+    return {};
+  }
+}
 
 const keepUrl = createServerFn({ method: "POST" })
   .validator((data: { url: string }) => data)
@@ -123,11 +155,12 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const router = useRouter();
-  const { clips, issues } = Route.useLoaderData();
+  const { clips, issues, progress } = Route.useLoaderData();
   const [keeping, setKeeping] = useState(false);
   const [binding, setBinding] = useState(false);
   const [choices, setChoices] = useState<Record<string, BindChoice>>({});
   const [bindError, setBindError] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const enriching = deskEnriching(clips);
 
   // Keep answers before the card is read; reload until every card has filled in.
@@ -145,163 +178,216 @@ function Home() {
       })),
     [clips, choices],
   );
+  const chosen = chosenFromBoard(board);
+  const keptChosen = chosen.filter((piece) => piece.role === "original").length;
 
   function setChoice(id: string, choice: BindChoice) {
     setChoices((current) => ({ ...current, [id]: choice }));
   }
 
+  function createIssueNow() {
+    if (binding) return;
+    if (chosen.length === 0) {
+      setBindError(nothingSelected);
+      return;
+    }
+    setBindError("");
+    setBinding(true);
+    bindIssue({
+      data: {
+        selections: board
+          .filter(({ clip, choice }) => chosenPieces(clip, choice).length > 0)
+          .map(({ clip, choice }) => ({
+            clipId: clip.id,
+            includeOriginal: choice.includeOriginal,
+            relatedUrls: choice.relatedUrls,
+          })),
+      },
+    })
+      .then(
+        (result) =>
+          router.invalidate().then(() => router.navigate({ to: "/read/$id", params: { id: result.id } })),
+        (cause: unknown) => {
+          setBindError(cause instanceof Error ? cause.message : "Could not bind this issue.");
+        },
+      )
+      .finally(() => setBinding(false));
+  }
+
   return (
     <main>
-      <header className="site">
-        <nav>
-          <strong className="site-masthead">
-            <QuireMark />
-          </strong>
-          <button
-            type="button"
-            className="quiet"
-            onClick={() => authClient.signOut().finally(() => window.location.assign("/login"))}
-          >
-            {signOutLabel}
-          </button>
-        </nav>
-      </header>
+      <div className="paper desk-head">
+        <header className="masthead site">
+          <Nameplate />
+          <nav className="desk-nav" aria-label={productNav}>
+            <a href="#desk" aria-current="page">
+              {deskLabel}
+            </a>
+            <a href="#press">{pressLabel}</a>
+            <button
+              type="button"
+              aria-expanded={settingsOpen}
+              aria-controls="reading-settings"
+              onClick={() => setSettingsOpen((open) => !open)}
+            >
+              <span className="long">{readingSettingsLabel}</span>
+              <span className="short">{readingSettingsShort}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => authClient.signOut().finally(() => window.location.assign("/login"))}
+            >
+              {signOutLabel}
+            </button>
+          </nav>
+          <OxfordRule />
+          <p className="desk-date">
+            <span>{longDate(new Date().toISOString())}</span>
+            <span>{deskCount(clips.length)}</span>
+          </p>
+        </header>
+      </div>
+      <ReadingSettingsPanel id="reading-settings" open={settingsOpen} />
 
-      <div className="desk">
-        <aside className="keep-rail">
-          <form
-            className="keep"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (keeping) return;
-              const form = event.currentTarget;
-              const url = String(new FormData(form).get("url") ?? "");
-              setKeeping(true);
-              keepUrl({ data: { url } })
-                .then(() => {
-                  form.reset();
-                  return router.invalidate();
-                })
-                .finally(() => setKeeping(false));
-            }}
-          >
+      <div className="paper">
+        <form
+          className="keep"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (keeping) return;
+            const form = event.currentTarget;
+            const url = String(new FormData(form).get("url") ?? "");
+            setKeeping(true);
+            keepUrl({ data: { url } })
+              .then(() => {
+                form.reset();
+                return router.invalidate();
+              })
+              .finally(() => setKeeping(false));
+          }}
+        >
+          <label htmlFor="url">{keepLinkLabel}</label>
+          <p className="hint" id="url-hint">
+            {keepLinkHint}
+          </p>
+          <div className="keep-row">
             <input
               id="url"
               name="url"
               type="url"
               required
               placeholder="https://"
-              aria-label="URL"
+              aria-describedby="url-hint"
               disabled={keeping}
             />
-            <button type="submit" disabled={keeping} aria-busy={keeping}>
+            <button className="btn" type="submit" disabled={keeping} aria-busy={keeping}>
               {keeping ? "Keeping…" : "Keep"}
             </button>
-          </form>
-        </aside>
+          </div>
+        </form>
 
-        <section className="board">
+        <section className="board" id="desk" aria-labelledby="desk-heading">
+          <div className="board-head">
+            <h2 id="desk-heading">{yourDeskLabel}</h2>
+            {clips.length > 0 ? <p>{deskInstruction}</p> : null}
+          </div>
           {clips.length === 0 ? (
-            <p className="empty">{emptyState}</p>
+            <p className="empty-copy">{emptyState}</p>
           ) : (
-            <>
-              <ul className="cards">
-                {clips.map((clip: Clip) => (
-                  <li key={clip.id}>
-                    <BindCard
-                      clip={clip}
-                      choice={choices[clip.id] ?? defaultBindChoice()}
-                      onChoice={(choice) => setChoice(clip.id, choice)}
-                      onRemove={() =>
-                        removeKept({ data: { id: clip.id } }).then(() => router.invalidate())
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                disabled={binding}
-                aria-busy={binding}
-                onClick={() => {
-                  if (binding) return;
-                  const selected = chosenFromBoard(board);
-                  if (selected.length === 0) {
-                    setBindError(nothingSelected);
-                    return;
-                  }
-                  setBindError("");
-                  setBinding(true);
-                  bindIssue({
-                    data: {
-                      selections: board
-                        .filter(({ clip, choice }) => chosenPieces(clip, choice).length > 0)
-                        .map(({ clip, choice }) => ({
-                          clipId: clip.id,
-                          includeOriginal: choice.includeOriginal,
-                          relatedUrls: choice.relatedUrls,
-                        })),
-                    },
-                  })
-                    .then(
-                      (result) =>
-                        router.invalidate().then(() =>
-                          router.navigate({ to: "/read/$id", params: { id: result.id } }),
-                        ),
-                      (cause: unknown) => {
-                        setBindError(cause instanceof Error ? cause.message : "Could not bind this issue.");
-                      },
-                    )
-                    .finally(() => setBinding(false));
-                }}
-              >
-                {binding ? "Creating…" : createIssueLabel}
-              </button>
-              {bindError ? (
-                <p className="fail" role="alert">
-                  {bindError}
-                </p>
-              ) : null}
-            </>
+            <ul className="cards">
+              {clips.map((clip: Clip) => (
+                <li key={clip.id}>
+                  <BindCard
+                    clip={clip}
+                    choice={choices[clip.id] ?? defaultBindChoice()}
+                    onChoice={(choice) => setChoice(clip.id, choice)}
+                    onRemove={() => removeKept({ data: { id: clip.id } }).then(() => router.invalidate())}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="board press" id="press" aria-labelledby="press-heading">
+          <div className="board-head">
+            <h2 id="press-heading">{pressLabel}</h2>
+            <p>{issues.length > 0 ? `${pressInstruction} ${pressCount(issues.length)}.` : null}</p>
+          </div>
+          {issues.length === 0 ? (
+            <p className="empty-copy">{pressEmpty}</p>
+          ) : (
+            <ul className="press-grid">
+              {issues.map((issue) => (
+                <li key={issue.id}>
+                  <BoundCover
+                    issue={issue}
+                    number={issueNumber(issues, issue.id)}
+                    reached={progress[issue.id]}
+                    onRemove={(pieces) =>
+                      removeBound({ data: { id: issue.id, pieces } }).then(() => router.invalidate())
+                    }
+                  />
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       </div>
 
-      <section className="board press">
-        <header className="press-shelf">
-          <QuireMark />
-          <h2>{pressLabel}</h2>
-        </header>
-        {issues.length === 0 ? (
-          <p className="empty">{pressEmpty}</p>
-        ) : (
-          <ul className="covers">
-            {issues.map((issue) => (
-              <li key={issue.id}>
-                <BoundCover
-                  issue={issue}
-                  onRemove={(pieces) =>
-                    removeBound({ data: { id: issue.id, pieces } }).then(() => router.invalidate())
-                  }
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {clips.length > 0 ? (
+        <div className="bindbar">
+          <div className="bindbar-inner">
+            <div>
+              <p>
+                <strong>{chosenCount(chosen.length)}</strong>
+                {chosen.length > 0 ? (
+                  <span className="detail">
+                    <br />
+                    {chosenDetail(keptChosen, chosen.length - keptChosen)}
+                  </span>
+                ) : null}
+              </p>
+              {bindError ? (
+                <p className="status fail" role="alert">
+                  <Icon name="alert" />
+                  <span>{bindError}</span>
+                </p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={binding}
+              aria-busy={binding}
+              onClick={createIssueNow}
+            >
+              {binding ? "Creating…" : createIssueLabel}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
 
+const productNav = "Quire";
+
 function BoundCover({
   issue,
+  number,
+  reached,
   onRemove,
 }: {
   issue: BoundIssue;
+  number: number | null;
+  reached: number | undefined;
   onRemove: (pieces: "return" | "discard") => Promise<void>;
 }) {
   const [asking, setAsking] = useState(false);
   const [error, setError] = useState("");
+  const pages = issue.pieces.length + 1;
+  const progress = reached && reached > 0 ? readToPage(Math.min(reached + 1, pages), pages) : notStarted;
 
   function choose(pieces: "return" | "discard") {
     setError("");
@@ -314,31 +400,48 @@ function BoundCover({
   }
 
   return (
-    <article>
-      <Link className="cover" to="/read/$id" params={{ id: issue.id }}>
-        <strong className="display">{issue.title}</strong>
-        <span className="folio">{pressCoverMeta(issue)}</span>
+    <article className="mini">
+      <Link className="open" to="/read/$id" params={{ id: issue.id }}>
+        <Nameplate label="" />
+        <div className="mini-rule" />
+        <p className="mini-date">
+          {number ? `No. ${number} · ` : ""}
+          {shortDate(issue.createdAt)}
+        </p>
+        <h3>{issue.title}</h3>
+        <p className="meta">
+          {piecesCopy(issue.pieces.length)} · {minutesCopy(readingMinutes(issue.pieces)).toLowerCase()}
+        </p>
       </Link>
       {asking ? (
-        <>
-          <p className="empty">{removeIssueAsk}</p>
-          <p className="actions">
-            <button type="button" className="quiet" onClick={() => choose("return")}>
+        <div className="ask">
+          <p>{removeIssueAsk}</p>
+          <div className="ask-actions">
+            <button type="button" className="btn" onClick={() => choose("return")}>
               {returnToDeskLabel}
             </button>
-            <button type="button" className="quiet" onClick={() => choose("discard")}>
+            <button type="button" className="btn" onClick={() => choose("discard")}>
               {removePiecesTooLabel}
             </button>
-          </p>
-        </>
+            <button type="button" className="link-btn" onClick={() => setAsking(false)}>
+              {keepIssueLabel}
+            </button>
+          </div>
+        </div>
       ) : (
-        <p className="actions">
-          <button type="button" className="quiet" onClick={() => setAsking(true)}>
+        <div className="actions">
+          <span className="small muted">{progress}</span>
+          <button type="button" className="link-btn push" onClick={() => setAsking(true)}>
             {removeLabel}
           </button>
-        </p>
+        </div>
       )}
-      {error ? <p className="fail">{error}</p> : null}
+      {error ? (
+        <p className="status fail" role="alert">
+          <Icon name="alert" />
+          <span>{error}</span>
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -360,68 +463,64 @@ function BindCard({
   const kind = paperBadgeLabel(clip.understanding);
   const snippet = keptSnippet(clip.sourceHeadline);
   const figure = keptFigure(clip.sourceHeadline);
-  const keptOn = clip.savedAt.slice(0, 10);
+  const keptOn = shortDate(clip.savedAt);
   const progress = keepProgress(clip);
   const topic = clip.understanding?.status === "ok" ? clip.understanding.topic : "";
   const headlineSpoken =
     clip.sourceHeadline && clip.sourceHeadline.status !== "ok"
       ? sourceHeadlineCopy(clip.sourceHeadline)
       : null;
-  const date =
-    (clip.understanding?.status === "ok" && clip.understanding.date) || keptOn;
-  const secondary =
-    clip.sourceHeadline?.status === "ok"
-      ? [date, topic].filter(Boolean).filter((item, index, all) => all.indexOf(item) === index)
-      : [date].filter(Boolean);
+  const sourceDate = clip.understanding?.status === "ok" ? clip.understanding.date : "";
+  const date = (sourceDate && (shortDate(sourceDate) || sourceDate)) || keptOn;
+  const secondary = [kind, host, date, clip.sourceHeadline?.status === "ok" ? topic : ""]
+    .filter(Boolean)
+    .filter((item, index, all) => all.indexOf(item) === index);
+  const checkboxId = `in-${clip.id}`;
 
   return (
-    <article className={[choice.includeOriginal ? "card in" : "card", figure ? "photo" : ""].filter(Boolean).join(" ")}>
+    <article className={choice.includeOriginal ? "clip is-in" : "clip"}>
       {figure ? (
-        <span className="figure">
+        <div className="thumb">
           <img src={figure} alt="" />
-        </span>
+        </div>
       ) : null}
-      <header>
-        {kind ? (
-          <span className="badge" data-mark={kind}>
-            {kind}
-          </span>
-        ) : null}
-        <h3 className="display">
-          <Link to="/read/$id" params={{ id: clip.id }}>
-            {heading}
-          </Link>
-        </h3>
-      </header>
-      {snippet ? <p className="note">{snippet}</p> : null}
-      {secondary.length > 0 ? <p className="folio">{secondary.join(" · ")}</p> : null}
+      <h3>
+        <Link to="/read/$id" params={{ id: clip.id }}>
+          {heading}
+        </Link>
+      </h3>
+      {snippet ? <p className="snippet">{snippet}</p> : null}
+      {secondary.length > 0 ? <p className="meta">{secondary.join(" · ")}</p> : null}
       {headlineSpoken ? (
-        <p className={headlineSpoken.kind === "fail" ? "fail" : "empty"}>
-          {headlineSpoken.text}
+        <p className={headlineSpoken.kind === "fail" ? "status fail" : "status"}>
+          {headlineSpoken.kind === "fail" ? <Icon name="alert" /> : null}
+          <span>{headlineSpoken.text}</span>
         </p>
       ) : null}
       <UnderstandingFail clip={clip} />
       {progress ? (
-        <p className={progress === "stalled" ? "fail" : "empty"} role="status">
-          {keepProgressCopy[progress]}
+        <p className={progress === "stalled" ? "status fail" : "status"} role="status">
+          <Icon name={progress === "stalled" ? "alert" : "wait"} />
+          <span>{keepProgressCopy[progress]}</span>
         </p>
       ) : null}
-      <p className="actions">
-        <button
-          type="button"
-          className="include"
-          aria-pressed={choice.includeOriginal}
-          aria-label={inLabel}
-          onClick={() => onChoice({ ...choice, includeOriginal: !choice.includeOriginal })}
-        >
-          <span className="tick" aria-hidden />
-        </button>
+      <div className="actions">
+        <label className="tick" htmlFor={checkboxId}>
+          <input
+            id={checkboxId}
+            type="checkbox"
+            checked={choice.includeOriginal}
+            onChange={(event) => onChoice({ ...choice, includeOriginal: event.currentTarget.checked })}
+          />
+          {inLabel}
+        </label>
         <a className="source" href={clip.url} target="_blank" rel="noreferrer">
-          {host || sourceLabel}
+          {sourceLabel}
+          <Icon name="out" />
         </a>
         <button
           type="button"
-          className="quiet"
+          className="link-btn push"
           onClick={() => {
             setError("");
             onRemove().then(
@@ -434,7 +533,7 @@ function BindCard({
         >
           {removeLabel}
         </button>
-      </p>
+      </div>
       <RelatedSelect
         clip={clip}
         selected={choice.relatedUrls}
@@ -447,7 +546,12 @@ function BindCard({
           });
         }}
       />
-      {error ? <p className="fail">{error}</p> : null}
+      {error ? (
+        <p className="status fail" role="alert">
+          <Icon name="alert" />
+          <span>{error}</span>
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -456,8 +560,11 @@ function UnderstandingFail({ clip }: { clip: Clip }) {
   const record = clip.understanding;
   if (!record || record.status !== "failed") return null;
   return (
-    <p className="fail">
-      {couldNotUnderstand} {record.message}
+    <p className="status fail">
+      <Icon name="alert" />
+      <span>
+        {couldNotUnderstand} {record.message}
+      </span>
     </p>
   );
 }
@@ -478,9 +585,12 @@ function RelatedSelect({
   if (rail.status !== "ok") {
     const copy = moreOnThisTopicCopy({ status: rail.status, count: 0 });
     return (
-      <section className="rail">
-        <p className="fail">
-          {copy.text} {rail.message}
+      <section className="more rail">
+        <p className="status fail">
+          <Icon name="alert" />
+          <span>
+            {copy.text} {rail.message}
+          </span>
         </p>
       </section>
     );
@@ -490,8 +600,8 @@ function RelatedSelect({
   const copy = moreOnThisTopicCopy({ status: "ok", count: pages.length });
   if (copy.kind === "empty") {
     return (
-      <section className="rail">
-        <p className="empty">{nothingMoreOnTopic}</p>
+      <section className="more rail">
+        <p className="absent">{nothingMoreOnTopic}</p>
       </section>
     );
   }
@@ -501,13 +611,21 @@ function RelatedSelect({
   const count = relatedCountLabel(pages.length);
   const comparableSlot = slotState(pages, "comparable");
   const contrarianSlot = slotState(pages, "contrarian");
+  const listId = `more-${clip.id}`;
 
   return (
-    <section className="rail">
+    <section className="more rail">
       <h3>
-        <button type="button" aria-expanded={open} onClick={() => setOpen((current) => !current)}>
+        <button
+          type="button"
+          className="more-toggle"
+          aria-expanded={open}
+          aria-controls={listId}
+          onClick={() => setOpen((current) => !current)}
+        >
+          <Icon name="right" />
           {moreOnThisTopic}
-          {count ? <span className="tally">{count}</span> : null}
+          {count ? <span className="tally">({count})</span> : null}
         </button>
       </h3>
       {visible.length > 0 ? (
@@ -518,26 +636,16 @@ function RelatedSelect({
         </ul>
       ) : null}
       {collapsed.length > 0 ? (
-        <div className={open ? "roll is-open" : "roll"}>
-          <ul className="roll-inner">
-            {collapsed.map((page) => (
-              <RelatedItem key={page.url} page={page} on={selected.includes(page.url)} onToggle={onToggle} />
-            ))}
-          </ul>
-        </div>
+        <ul id={listId} hidden={!open}>
+          {collapsed.map((page) => (
+            <RelatedItem key={page.url} page={page} on={selected.includes(page.url)} onToggle={onToggle} />
+          ))}
+        </ul>
       ) : null}
-      {comparableSlot === "absent" || contrarianSlot === "absent" ? (
-        <ul className="absent">
-          {comparableSlot === "absent" ? (
-            <li>
-              <span className="stance">{railAbsentCopy("comparable")}</span>
-            </li>
-          ) : null}
-          {contrarianSlot === "absent" ? (
-            <li>
-              <span className="stance">{railAbsentCopy("contrarian")}</span>
-            </li>
-          ) : null}
+      {open && (comparableSlot === "absent" || contrarianSlot === "absent") ? (
+        <ul className="absent-slots">
+          {comparableSlot === "absent" ? <li className="absent">{railAbsentCopy("comparable")}</li> : null}
+          {contrarianSlot === "absent" ? <li className="absent">{railAbsentCopy("contrarian")}</li> : null}
         </ul>
       ) : null}
     </section>
@@ -556,30 +664,21 @@ function RelatedItem({
   const row = relatedRow(page);
   return (
     <li>
-      <button
-        type="button"
-        className="related-title"
-        aria-pressed={on}
-        onClick={() => onToggle(page.url, !on)}
-      >
-        {row.title}
-      </button>
-      {row.stance ? (
-        <span className={row.stance === "inconclusive" ? "stance quiet" : "stance"}>
-          {stanceCopy(row.stance)}
+      <label className="rel tick">
+        <input type="checkbox" checked={on} onChange={(event) => onToggle(page.url, event.currentTarget.checked)} />
+        <span className="rel-text">
+          <span className="visually-hidden">{addToIssue}: </span>
+          <span className="rel-title">{row.title}</span>
+          {row.stance ? (
+            <span className="stance">
+              <Icon name={stanceIcon[row.stance]} />
+              {stanceCopy(row.stance)}
+            </span>
+          ) : null}
+          {row.snippet ? <span className="rel-note">{row.snippet}</span> : null}
+          {row.detail ? <span className="rel-meta">{row.detail}</span> : null}
         </span>
-      ) : null}
-      {row.snippet ? <span className="note">{row.snippet}</span> : null}
-      {row.detail ? <span className="folio">{row.detail}</span> : null}
-      <button
-        type="button"
-        className="include"
-        aria-pressed={on}
-        aria-label={inLabel}
-        onClick={() => onToggle(page.url, !on)}
-      >
-        <span className="tick" aria-hidden />
-      </button>
+      </label>
     </li>
   );
 }

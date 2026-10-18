@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en-GB" data-tint="newsprint" data-size="m" data-spacing="standard">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quire — Sunday Bundle proposal</title>
+<link rel="icon" href="kit/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700;800&display=swap">
+<style>
+/* ---------- Tokens ---------- */
+:root {
+  --ink: #22201B;
+  --ink-2: #3D3A32;
+  --muted: #5C574B;
+  --paper: #F7F2DF;
+  --sheet: #FFFCF0;          /* clippings, inputs, the reading panel */
+  --line: #CFC6AA;
+  --line-2: #E4DCC3;
+  --marigold: #F2B705;       /* fills only: band, ribbon, selection, end mark */
+  --marigold-soft: #FBEAB0;
+  --on-marigold: #22201B;
+  --link: #1D4F91;
+  --link-hover: #12376A;
+  --focus: #22201B;
+  --band-ink: #22201B;       /* the one reversed element per page */
+  --band-text: #F7F2DF;
+
+  --font: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", Verdana, Tahoma, sans-serif;
+
+  /* Five sizes. That is the whole scale. */
+  --fs-display: clamp(2.125rem, 1.45rem + 2.2vw, 3rem);     /* 34 → 48 */
+  --fs-headline: clamp(1.75rem, 1.45rem + 1vw, 2.25rem);    /* 28 → 36 */
+  --fs-sub: 1.5rem;                                          /* 24 */
+  --fs-body: 1.1875rem;                                      /* 19 */
+  --fs-small: 1rem;                                          /* 16, the floor */
+
+  --track: 0.02em;
+  --word: 0.08em;
+  --lead: 1.6;
+  --para: 1em;
+  --measure: 64ch;
+
+  --gutter: 16px;
+  --radius: 2px;
+  color-scheme: light;
+}
+@media (min-width: 720px) { :root { --gutter: 32px; } }
+
+/* Reader tints: the reader chooses. Each keeps ink ≥ 12:1. */
+[data-tint="cream"]  { --paper: #FBF6E9; --sheet: #FFFDF7; --line: #D8CFB8; --line-2: #ECE5D3; }
+[data-tint="yellow"] { --paper: #FBF0C2; --sheet: #FFF8DC; --line: #D9C77F; --line-2: #EFE2AE; --marigold-soft: #F5DC86; }
+[data-tint="blue"]   { --paper: #E3EDF5; --sheet: #F3F8FC; --line: #B4C6D6; --line-2: #D3E0EB; --marigold-soft: #F9E7A8; }
+[data-tint="grey"]   { --paper: #ECECE8; --sheet: #F8F8F5; --line: #C4C3BC; --line-2: #DEDDD7; }
+[data-tint="night"]  {
+  --ink: #EDE6CF; --ink-2: #D6CFB9; --muted: #B2AA94;
+  --paper: #1B1A16; --sheet: #24231E; --line: #4A463B; --line-2: #34322A;
+  --marigold-soft: #4A3D12; --link: #A9C6F2; --link-hover: #CFE0FA;
+  --focus: #F2B705; --band-ink: #EDE6CF; --band-text: #1B1A16;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tint-chosen]) {
+    --ink: #EDE6CF; --ink-2: #D6CFB9; --muted: #B2AA94;
+    --paper: #1B1A16; --sheet: #24231E; --line: #4A463B; --line-2: #34322A;
+    --marigold-soft: #4A3D12; --link: #A9C6F2; --link-hover: #CFE0FA;
+    --focus: #F2B705; --band-ink: #EDE6CF; --band-text: #1B1A16;
+    color-scheme: dark;
+  }
+}
+[data-size="s"]  { --fs-body: 1.0625rem; }  /* 17 */
+[data-size="l"]  { --fs-body: 1.375rem; }   /* 22 */
+[data-size="xl"] { --fs-body: 1.5625rem; --fs-sub: 1.75rem; } /* 25 */
+[data-spacing="wide"] { --track: 0.12em; --word: 0.16em; --lead: 2; --para: 2em; } /* WCAG 1.4.12 values */
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: var(--lead);
+  letter-spacing: var(--track);
+  word-spacing: var(--word);
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--marigold); color: var(--on-marigold); }
+h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: 0; word-spacing: 0.04em; text-wrap: balance; }
+p { margin: 0; }
+.article-body p + p, .opening p + p { margin-top: var(--para); }
+strong, b { font-weight: 700; }
+em, i { font-style: normal; font-weight: 700; }    /* no italics: emphasis is bold */
+a { color: var(--link); text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 0.28em; text-decoration-skip-ink: all; }
+a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold); border-radius: var(--radius); }
+img { max-width: 100%; display: block; }
+button, input { font: inherit; letter-spacing: inherit; word-spacing: inherit; color: inherit; }
+.short { display: none; }
+@media (max-width: 719px) { .appbar .long { display: none; } .appbar .short { display: inline; } .appbar .tools { flex-wrap: nowrap; } }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.icon { width: 1.25em; height: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.25em; }
+.small { font-size: var(--fs-small); line-height: 1.5; }
+.muted { color: var(--muted); }
+
+/* ---------- Proposal switcher (not part of the product) ---------- */
+.proto { letter-spacing: normal; word-spacing: normal;
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+  padding: 10px var(--gutter);
+  background: #2E2C26; color: #F7F2DF; font-size: 15px; line-height: 1.4;
+}
+.proto strong { font-weight: 700; }
+.proto nav { display: flex; flex-wrap: wrap; gap: 4px; }
+.proto a { color: #F7F2DF; text-decoration: none; padding: 6px 10px; border-radius: 2px; }
+.proto a[aria-current="page"] { background: #F2B705; color: #22201B; }
+.proto .note { margin-left: auto; color: #CFC6AA; }
+
+.view { display: none; }
+.view.is-on { display: block; }
+
+/* ---------- Buttons & controls ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5em;
+  min-height: 48px; padding: 0.55em 1.1em;
+  border: 2px solid var(--ink); border-radius: var(--radius);
+  background: transparent; color: var(--ink);
+  font-weight: 700; font-size: var(--fs-small); line-height: 1.2; cursor: pointer; text-decoration: none;
+}
+.btn:hover { background: var(--marigold-soft); }
+.btn-primary { background: var(--band-ink); color: var(--band-text); border-color: var(--band-ink); }
+.btn-primary:hover { background: var(--ink-2); color: var(--band-text); }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.link-btn {
+  display: inline-flex; align-items: center; gap: 0.4em; min-height: 44px;
+  padding: 0 0.25em; border: 0; background: none; cursor: pointer;
+  font-size: var(--fs-small); font-weight: 700; color: var(--ink);
+}
+a.link-btn { text-decoration: none; }
+.link-btn:hover { text-decoration: underline; text-underline-offset: 0.28em; }
+
+/* ---------- App bar (sits outside the paper) ---------- */
+.appbar {
+  display: flex; align-items: center; gap: 12px 20px; flex-wrap: wrap;
+  padding: 10px var(--gutter);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-small); line-height: 1.4;
+}
+.appbar .home { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-weight: 700; }
+.appbar .home img { height: 30px; width: auto; }
+.appbar .where { color: var(--muted); }
+#view-front .appbar .home { display: none; }
+.appbar .tools { margin-left: auto; display: flex; gap: 4px 12px; flex-wrap: wrap; }
+[data-tint="night"] .nameplate-img, [data-tint="night"] .appbar .home img { filter: invert(93%) sepia(12%) saturate(300%) hue-rotate(5deg); }
+@media (prefers-color-scheme: dark) { :root:not([data-tint-chosen]) .nameplate-img, :root:not([data-tint-chosen]) .appbar .home img { filter: invert(93%) sepia(12%) saturate(300%) hue-rotate(5deg); } }
+
+/* ---------- Reading settings panel (a disclosure, not a modal) ---------- */
+.settings { border-bottom: 1px solid var(--line); background: var(--sheet); }
+.settings[hidden] { display: none; }
+.settings-inner { max-width: 72rem; margin: 0 auto; padding: 20px var(--gutter) 24px; display: grid; gap: 20px 40px; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+.settings h2 { font-size: var(--fs-small); font-weight: 700; margin-bottom: 8px; }
+.settings fieldset { border: 0; margin: 0; padding: 0; }
+.settings legend { font-size: var(--fs-small); font-weight: 700; margin-bottom: 8px; padding: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 12px;
+  border: 2px solid var(--line); border-radius: var(--radius); background: var(--paper);
+  font-size: var(--fs-small); line-height: 1.2; cursor: pointer;
+}
+.chip input:checked + span { border-color: var(--ink); box-shadow: inset 0 -5px 0 var(--marigold); font-weight: 700; }
+.chip input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 3px; }
+.swatch { width: 18px; height: 18px; border-radius: 50%; border: 1px solid #22201B55; }
+
+/* ---------- Masthead ---------- */
+.masthead { padding: 20px 0 0; }
+.masthead-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+.masthead .nameplate-img { height: clamp(60px, 8vw, 88px); width: auto; margin: 0 auto; }
+.ear { border: 1px solid var(--ink); padding: 10px 12px; font-size: var(--fs-small); line-height: 1.4; max-width: 15rem; }
+.ear strong { display: block; }
+.ear-right { justify-self: end; text-align: left; }
+.oxford { border: 0; height: 7px; margin: 14px 0 0; background:
+  linear-gradient(var(--ink), var(--ink)) top / 100% 4px no-repeat,
+  linear-gradient(var(--ink), var(--ink)) bottom / 100% 1px no-repeat; }
+.oxford.flip { background:
+  linear-gradient(var(--ink), var(--ink)) top / 100% 1px no-repeat,
+  linear-gradient(var(--ink), var(--ink)) bottom / 100% 4px no-repeat; }
+.dateline {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 24px;
+  margin-top: 6px; padding: 8px 14px;
+  background: var(--band-ink); color: var(--band-text);
+  font-size: var(--fs-small); font-weight: 700; line-height: 1.4;
+}
+@media (max-width: 719px) {
+  .masthead-row { grid-template-columns: 1fr; justify-items: center; gap: 12px; }
+  .ear { display: none; }
+  .ears-inline { display: block; }
+}
+.ears-inline { display: none; text-align: center; font-size: var(--fs-small); color: var(--muted); line-height: 1.4; }
+
+/* ---------- The paper (reading pages) ---------- */
+.paper { max-width: 72rem; margin: 0 auto; padding: 0 var(--gutter) 48px; }
+
+/* Front page */
+.lead { margin-top: 24px; }
+html { scroll-padding-bottom: 96px; }
+.skyline { list-style: none; margin: 0; padding: 10px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 24px; border-bottom: 1px solid var(--ink); font-size: var(--fs-small); line-height: 1.4; }
+.skyline a { display: block; color: var(--ink); text-decoration: none; }
+.skyline a strong { display: block; }
+.skyline a span { color: var(--muted); }
+.skyline a u { color: var(--link); font-weight: 700; text-decoration-thickness: 1px; text-underline-offset: 0.28em; }
+.skyline a:hover strong { text-decoration: underline; text-underline-offset: 0.2em; }
+@media (max-width: 899px) { .skyline { grid-template-columns: 1fr; } }
+.standfirst { margin-top: 14px; max-width: 46ch; font-size: var(--fs-sub); line-height: 1.4; font-weight: 400; color: var(--ink-2); }
+.credit { font-weight: 700; color: var(--ink-2); }
+.lead h1 { font-size: var(--fs-display); line-height: 1.15; max-width: 22ch; }
+.lead h1 a { color: var(--ink); text-decoration: none; }
+.lead h1 a:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 0.18em; }
+.byline { margin-top: 12px; font-size: var(--fs-small); color: var(--muted); line-height: 1.5; }
+.byline strong { color: var(--ink); }
+.lead-grid { display: grid; gap: 28px 40px; margin-top: 24px; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; }
+.lead-grid .opening p { max-width: 46ch; }
+.lead-grid .opening .btn { margin-top: 24px; }
+@media (max-width: 899px) { .lead-grid { grid-template-columns: 1fr; } }
+
+figure { margin: 0; }
+.figure-frame { background: var(--sheet); border: 1px solid var(--line-2); display: grid; place-items: center; max-height: 26rem; overflow: hidden; }
+.figure-frame svg { width: 100%; height: auto; max-height: 26rem; }
+.lead .figure-frame, .lead .figure-frame svg { max-height: 18rem; }
+.lead-grid .opening { border-left: 1px solid var(--line); padding-left: 32px; }
+@media (max-width: 899px) { .lead-grid .opening { border-left: 0; padding-left: 0; } }
+figcaption { margin-top: 8px; font-size: var(--fs-small); line-height: 1.5; color: var(--muted); max-width: 60ch; }
+
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-top: 48px; }
+.section-head h2 { font-size: var(--fs-sub); line-height: 1.3; }
+.inside { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
+.inside li { padding: 18px 24px 22px 0; border-bottom: 1px solid var(--line); }
+.inside li + li { padding-left: 24px; border-left: 1px solid var(--line); }
+.inside h3 { font-size: var(--fs-sub); line-height: 1.3; }
+.inside h3 a { color: var(--ink); text-decoration: none; }
+.inside h3 a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.stance { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: var(--fs-small); font-weight: 700; line-height: 1.4; }
+.stance + .meta { margin-top: 2px; }
+.meta { font-size: var(--fs-small); color: var(--muted); line-height: 1.5; margin-top: 10px; }
+.page-no { display: inline-block; margin-top: 12px; font-size: var(--fs-small); font-weight: 700; }
+@media (max-width: 899px) {
+  .inside { grid-template-columns: 1fr; }
+  .inside li, .inside li + li { padding: 18px 0 20px; border-left: 0; }
+}
+.colophon { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--line); font-size: var(--fs-small); color: var(--muted); line-height: 1.5; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+/* Article page */
+.band {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 20px;
+  margin-top: 28px; padding: 10px 16px;
+  background: var(--marigold); color: var(--on-marigold);
+  font-size: var(--fs-small); line-height: 1.4;
+}
+.band strong { font-weight: 800; }
+.band a { color: var(--on-marigold); font-weight: 700; }
+.article { max-width: var(--measure); margin: 0 auto; }
+.article-head { margin-top: 40px; }
+.article-head h1 { font-size: var(--fs-headline); line-height: 1.2; }
+.article .figure-frame { margin-top: 28px; }
+.article-body { margin-top: 32px; }
+.article-body h2 { font-size: var(--fs-sub); line-height: 1.3; margin: 2em 0 0.6em; }
+.article-body p:first-child { font-size: calc(var(--fs-body) * 1.08); }
+.pull {
+  margin: 2em 0; padding: 18px 0 20px;
+  border-top: 4px solid var(--ink); border-bottom: 1px solid var(--ink);
+  font-size: var(--fs-sub); line-height: 1.4; font-weight: 700;
+}
+.pull p::before { content: "“"; } .pull p::after { content: "”"; }
+.pull cite { display: block; margin-top: 10px; font-style: normal; font-size: var(--fs-small); font-weight: 400; color: var(--muted); }
+.note-box { margin: 2em 0; padding: 18px 20px; background: var(--marigold-soft); border: 1px solid var(--line); border-radius: var(--radius); }
+.note-box h2 { margin: 0 0 6px !important; font-size: var(--fs-small) !important; line-height: 1.4 !important; }
+.note-box p { font-size: var(--fs-body); }
+.end-mark { display: inline-block; width: 0.6em; height: 0.6em; margin-left: 0.35em; background: var(--marigold); outline: 1px solid var(--ink); vertical-align: 0.05em; }
+.source-foot { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); font-size: var(--fs-small); line-height: 1.5; color: var(--muted); }
+
+/* Ribbon: where you stopped */
+.resume {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-top: 20px; padding: 10px 14px;
+  border: 1px solid var(--line); background: var(--sheet);
+  font-size: var(--fs-small); line-height: 1.4;
+}
+.resume img { width: 14px; height: 38px; }
+@media (max-width: 559px) { .resume { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } .resume img { grid-row: span 2; } .resume .push { justify-self: start; } }
+@media (max-width: 719px) { .appbar .where, .appbar .print-btn { display: none; } .appbar { flex-wrap: nowrap; gap: 8px; } .appbar .tools { gap: 2px 10px; } }
+.stopped { position: relative; }
+.stopped::before {
+  content: ""; position: absolute; left: -36px; top: -2px; width: 16px; height: 44px;
+  background: url("kit/ribbon.svg") no-repeat center / contain;
+}
+@media (max-width: 719px) { .stopped::before { left: -14px; width: 10px; height: 30px; } }
+
+/* Page-turn bar */
+.turn {
+  position: sticky; bottom: 0; z-index: 5;
+  border-top: 2px solid var(--ink); background: var(--paper);
+}
+.turn-inner { max-width: 72rem; margin: 0 auto; padding: 8px var(--gutter); display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; font-size: var(--fs-small); line-height: 1.35; }
+.turn a { display: flex; flex-direction: column; gap: 2px; min-height: 48px; justify-content: center; text-decoration: none; color: var(--ink); }
+.turn a span { color: var(--muted); }
+.turn a strong { font-weight: 700; }
+.turn a:hover strong { text-decoration: underline; text-underline-offset: 0.25em; }
+.turn .next { text-align: right; }
+.turn .folio { font-weight: 700; text-align: center; white-space: nowrap; }
+@media (max-width: 719px) { .turn a strong { display: none; } .turn a span { color: var(--ink); font-weight: 700; } }
+
+/* ---------- Desk ---------- */
+.desk-head .masthead .nameplate-img { height: clamp(48px, 6vw, 72px); }
+.desk-nav { display: flex; gap: 4px 20px; flex-wrap: wrap; justify-content: center; margin-top: 8px; font-size: var(--fs-small); }
+.desk-nav a { color: var(--ink); text-decoration: none; font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; padding: 0 2px; }
+@media (max-width: 559px) { .desk-nav .long { display: none; } .desk-nav .short { display: inline; } .actions { display: grid; grid-template-columns: auto 1fr auto; } }
+.desk-nav a[aria-current="page"] { box-shadow: inset 0 -5px 0 var(--marigold); }
+.desk-nav a:hover { text-decoration: underline; text-underline-offset: 0.28em; }
+.desk-date { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 20px; margin-top: 6px; font-size: var(--fs-small); color: var(--muted); line-height: 1.5; }
+
+.keep { margin-top: 32px; padding: 20px; border: 2px solid var(--ink); background: var(--sheet); }
+.keep label { display: block; font-size: var(--fs-sub); font-weight: 800; line-height: 1.3; }
+.keep .hint { margin-top: 4px; font-size: var(--fs-small); color: var(--muted); line-height: 1.5; }
+.keep-row { display: flex; gap: 12px; margin-top: 14px; }
+.keep input { flex: 1; min-width: 0; min-height: 52px; padding: 10px 14px; border: 2px solid var(--ink); border-radius: var(--radius); background: var(--paper); font-size: var(--fs-body); }
+.keep input::placeholder { color: var(--muted); }
+@media (max-width: 559px) { .keep-row { flex-direction: column; } .keep-row .btn { justify-content: center; } }
+
+.board-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; margin-top: 44px; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.board-head h2 { font-size: var(--fs-sub); line-height: 1.3; }
+.board-head p { font-size: var(--fs-small); color: var(--muted); line-height: 1.5; }
+.cards { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cards > li { display: flex; align-items: flex-start; }
+@media (max-width: 899px) { .cards { grid-template-columns: 1fr; } }
+.clip { flex: 1; display: flex; flex-direction: column; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 20px 14px; }
+.clip .actions { margin-top: auto; }
+.clip .meta { margin-bottom: 12px; }
+.clip::before { content: ""; display: block; height: 6px; margin: 0 -20px 18px; background: transparent; }
+.clip.is-in::before { background: var(--marigold); }
+.clip .thumb { margin: 0 0 14px; background: var(--paper); display: grid; place-items: center; max-height: 12rem; overflow: hidden; }
+.clip .thumb svg { width: 100%; height: auto; max-height: 12rem; }
+.clip h3 { font-size: var(--fs-body); line-height: 1.35; }
+.clip h3 a { color: var(--ink); text-decoration: none; }
+.clip h3 a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.clip .snippet { margin-top: 8px; font-size: var(--fs-small); line-height: 1.55; }
+.clip .status { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: var(--fs-small); line-height: 1.5; }
+.clip .status.fail { font-weight: 700; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line-2); }
+.tick { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font-size: var(--fs-small); font-weight: 700; }
+.tick input { appearance: none; -webkit-appearance: none; margin: 0; width: 28px; height: 28px; border: 2px solid var(--ink); border-radius: var(--radius); background: var(--paper); display: grid; place-items: center; cursor: pointer; }
+.tick input:checked { background: var(--marigold); }
+.tick input:checked::after { content: ""; width: 12px; height: 7px; border: solid #22201B; border-width: 0 0 3px 3px; transform: translateY(-2px) rotate(-45deg); }
+.actions .push { margin-left: auto; }
+@media (max-width: 559px) { .clip .actions, .mini .actions { display: grid; grid-template-columns: auto 1fr auto; } .clip .actions .push { margin-left: 0; } }
+.actions a { font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
+
+.more { margin-top: 10px; border-top: 1px solid var(--line-2); }
+.more summary { display: flex; align-items: center; gap: 8px; min-height: 48px; cursor: pointer; font-size: var(--fs-small); font-weight: 700; list-style: none; }
+.more summary::-webkit-details-marker { display: none; }
+.more summary .chev { transition: transform 160ms ease-out; }
+.more[open] summary .chev { transform: rotate(90deg); }
+.more ul { list-style: none; margin: 0 0 6px; padding: 0; }
+.more li { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--line-2); }
+.more li .tick { min-height: 0; align-self: start; padding-top: 2px; }
+.more .rel-title { font-size: var(--fs-small); font-weight: 700; line-height: 1.45; }
+.more .rel-meta { font-size: var(--fs-small); color: var(--muted); line-height: 1.45; }
+.more .stance { margin-top: 0; }
+.more .absent { grid-template-columns: 1fr; font-size: var(--fs-small); color: var(--muted); line-height: 1.5; }
+
+.bindbar { position: sticky; bottom: 0; z-index: 5; margin-top: 28px; background: var(--paper); border-top: 2px solid var(--ink); }
+.bindbar-inner { max-width: 72rem; margin: 0 auto; padding: 10px var(--gutter); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.bindbar p { font-size: var(--fs-small); line-height: 1.4; }
+.bindbar p strong { font-size: var(--fs-body); }
+@media (max-width: 559px) { .bindbar-inner { flex-wrap: nowrap; } .bindbar p .detail { display: none; } }
+
+/* Press: the library of bound issues */
+.press-grid { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr)); }
+.mini { background: var(--sheet); border: 1px solid var(--line); padding: 14px 16px 12px; }
+.mini a.open { display: block; color: var(--ink); text-decoration: none; }
+.mini .mini-np { height: 30px; width: auto; margin: 0 auto; }
+.mini .mini-rule { height: 4px; margin: 8px 0 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.mini .mini-date { margin-top: 4px; padding: 3px 8px; background: var(--band-ink); color: var(--band-text); font-size: var(--fs-small); font-weight: 700; line-height: 1.4; text-align: center; }
+.mini h3 { margin-top: 12px; font-size: var(--fs-body); line-height: 1.35; }
+.mini a.open:hover h3 { text-decoration: underline; text-underline-offset: 0.2em; }
+.mini .meta { margin-top: 6px; }
+.mini .actions { margin-top: 10px; }
+
+.empty-copy { margin-top: 16px; padding: 28px 0; max-width: 46ch; color: var(--ink-2); }
+
+/* Sign in */
+.signin { max-width: 30rem; margin: 0 auto; padding: 48px var(--gutter) 64px; }
+.signin .nameplate-img { height: 96px; width: auto; margin: 0 auto; }
+.signin h1 { margin-top: 32px; font-size: var(--fs-headline); line-height: 1.2; }
+.signin form { margin-top: 20px; display: grid; gap: 18px; }
+.field label { display: block; font-size: var(--fs-small); font-weight: 700; line-height: 1.4; margin-bottom: 6px; }
+.field input { width: 100%; min-height: 52px; padding: 10px 14px; border: 2px solid var(--ink); border-radius: var(--radius); background: var(--sheet); }
+.field .error { display: flex; gap: 8px; margin-top: 8px; font-size: var(--fs-small); font-weight: 700; line-height: 1.45; }
+
+.sample { margin: 0 auto; max-width: 72rem; padding: 8px var(--gutter) 0; font-size: 14px; color: var(--muted); line-height: 1.4; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .view.is-on { animation: settle 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes settle { from { opacity: 0; } to { opacity: 1; } }
+}
+@media print {
+  .proto, .appbar, .turn, .settings, .sample { display: none !important; }
+  body { background: #fff; font-size: 12pt; }
+}
+</style>
+</head>
+<body>
+
+<!-- Drawn icon set: 24 grid, 2 stroke, round caps. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-parallel" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/></symbol>
+  <symbol id="i-contrast" viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></symbol>
+  <symbol id="i-unplaced" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.2v.1"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><path d="M3 19 8 5l5 14M4.8 14h6.4M15 19v-6.5a3 3 0 0 1 6 0V19M15 15.5h6"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-wait" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3zM12 10v4M12 17v.1"/></symbol>
+  <symbol id="i-ribbon" viewBox="0 0 24 24"><path d="M7 3h10v18l-5-4-5 4z"/></symbol>
+</svg>
+
+<div class="proto" role="navigation" aria-label="Proposal screens">
+  <strong>Quire proposal</strong>
+  <nav>
+    <a href="#front">Front page</a>
+    <a href="#article">Article page</a>
+    <a href="#desk">Desk</a>
+    <a href="#press">Press</a>
+    <a href="#signin">Sign in</a>
+    <a href="#empty">Empty states</a>
+  </nav>
+  <span class="note">Sample content, made up for this mockup.</span>
+</div>
+
+<!-- Shared reading app bar + settings (rendered for front & article) -->
+<template id="appbar-tpl">
+  <header class="appbar">
+    <a class="home" href="#desk"><img src="kit/nameplate.svg" alt="Quire, back to the Desk"></a>
+    <span class="where">Issue No. 7, <span data-where>front page</span></span>
+    <div class="tools">
+      <a class="link-btn" href="#front"><svg class="icon"><use href="#i-list"/></svg>Contents</a>
+      <button class="link-btn" type="button" data-settings-toggle aria-expanded="false" aria-controls="settings"><svg class="icon"><use href="#i-text"/></svg><span class="long">Reading settings</span><span class="short">Settings</span></button>
+      <button class="link-btn print-btn" type="button"><svg class="icon"><use href="#i-print"/></svg>Print this issue</button>
+    </div>
+  </header>
+</template>
+
+<section class="settings" id="settings" hidden aria-label="Reading settings">
+  <div class="settings-inner">
+    <fieldset>
+      <legend>Paper colour</legend>
+      <div class="chips" data-setting="tint">
+        <label class="chip"><input type="radio" name="tint" value="newsprint"><span><i class="swatch" style="background:#F7F2DF"></i>Newsprint</span></label>
+        <label class="chip"><input type="radio" name="tint" value="cream"><span><i class="swatch" style="background:#FBF6E9"></i>Cream</span></label>
+        <label class="chip"><input type="radio" name="tint" value="yellow"><span><i class="swatch" style="background:#FBF0C2"></i>Yellow</span></label>
+        <label class="chip"><input type="radio" name="tint" value="blue"><span><i class="swatch" style="background:#E3EDF5"></i>Blue</span></label>
+        <label class="chip"><input type="radio" name="tint" value="grey"><span><i class="swatch" style="background:#ECECE8"></i>Grey</span></label>
+        <label class="chip"><input type="radio" name="tint" value="night"><span><i class="swatch" style="background:#1B1A16"></i>Night</span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Text size</legend>
+      <div class="chips" data-setting="size">
+        <label class="chip"><input type="radio" name="size" value="s"><span style="font-size:16px">Small</span></label>
+        <label class="chip"><input type="radio" name="size" value="m"><span>Standard</span></label>
+        <label class="chip"><input type="radio" name="size" value="l"><span style="font-size:19px">Large</span></label>
+        <label class="chip"><input type="radio" name="size" value="xl"><span style="font-size:21px">Largest</span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Spacing</legend>
+      <div class="chips" data-setting="spacing">
+        <label class="chip"><input type="radio" name="spacing" value="standard"><span>Standard</span></label>
+        <label class="chip"><input type="radio" name="spacing" value="wide"><span style="letter-spacing:.12em;word-spacing:.16em">Wide</span></label>
+      </div>
+      <p class="small muted" style="margin-top:10px">Saved on this device. Applies to every page.</p>
+    </fieldset>
+  </div>
+</section>
+
+<!-- ============ FRONT PAGE ============ -->
+<main class="view" id="view-front" data-view="front" data-where="front page">
+  <div data-appbar></div>
+  <div class="paper">
+    <header class="masthead">
+      <div class="masthead-row">
+        <div class="ear"><strong>Issue No. 7</strong>Bound Sunday 18 October 2026</div>
+        <img class="nameplate-img" src="kit/nameplate.svg" alt="Quire">
+        <div class="ear ear-right"><strong>4 pieces</strong>About 19 minutes of reading</div>
+      </div>
+      <p class="ears-inline">Issue No. 7 · 4 pieces · about 19 minutes</p>
+      <hr class="oxford">
+      <p class="dateline"><span>Sunday 18 October 2026</span><span>A personal press for one reader</span></p>
+      <ul class="skyline" aria-label="Also inside">
+        <li><a href="#article"><strong>Card catalogues are back in fashion</strong><span>Other reporting · <u>page 3</u></span></a></li>
+        <li><a href="#article"><strong>The catalogue is a museum piece</strong><span>A contrasting angle · <u>page 4</u></span></a></li>
+        <li><a href="#article"><strong>A short history of the index card</strong><span>Could not place · <u>page 5</u></span></a></li>
+      </ul>
+    </header>
+
+    <article class="lead">
+      <h1><a href="#article">Why the town library kept its card catalogue</a></h1>
+      <p class="standfirst">Volunteers check the drawers every morning. The council asked twice if they could go.</p>
+      <p class="byline"><strong>The Northfield Courier</strong> · By Ada Morrow · 12 October 2026</p>
+      <div class="lead-grid">
+        <figure>
+          <div class="figure-frame">
+            <svg viewBox="0 0 640 400" role="img" aria-label="Sample figure: a wooden card catalogue with rows of small drawers">
+              <rect width="640" height="400" fill="#E9E1C8"/>
+              <rect x="120" y="40" width="400" height="330" fill="#8A6A45"/>
+              <rect x="120" y="40" width="400" height="16" fill="#6E5235"/>
+              <g fill="#B08A5E" stroke="#6E5235" stroke-width="3">
+                <rect x="140" y="72" width="80" height="56"/><rect x="236" y="72" width="80" height="56"/><rect x="332" y="72" width="80" height="56"/><rect x="428" y="72" width="80" height="56"/>
+                <rect x="140" y="144" width="80" height="56"/><rect x="236" y="144" width="80" height="56"/><rect x="332" y="144" width="80" height="56"/><rect x="428" y="144" width="80" height="56"/>
+                <rect x="140" y="216" width="80" height="56"/><rect x="236" y="216" width="80" height="56"/><rect x="332" y="216" width="80" height="56"/><rect x="428" y="216" width="80" height="56"/>
+                <rect x="140" y="288" width="80" height="56"/><rect x="236" y="288" width="80" height="56"/><rect x="332" y="288" width="80" height="56"/><rect x="428" y="288" width="80" height="56"/>
+              </g>
+              <g fill="#F7F2DF"><rect x="162" y="84" width="36" height="12"/><rect x="258" y="84" width="36" height="12"/><rect x="354" y="84" width="36" height="12"/><rect x="450" y="84" width="36" height="12"/><rect x="162" y="156" width="36" height="12"/><rect x="258" y="156" width="36" height="12"/><rect x="354" y="156" width="36" height="12"/><rect x="450" y="156" width="36" height="12"/><rect x="162" y="228" width="36" height="12"/><rect x="258" y="228" width="36" height="12"/><rect x="354" y="228" width="36" height="12"/><rect x="450" y="228" width="36" height="12"/><rect x="162" y="300" width="36" height="12"/><rect x="258" y="300" width="36" height="12"/><rect x="354" y="300" width="36" height="12"/><rect x="450" y="300" width="36" height="12"/></g>
+              <g fill="#3D3A32"><circle cx="180" cy="112" r="5"/><circle cx="276" cy="112" r="5"/><circle cx="372" cy="112" r="5"/><circle cx="468" cy="112" r="5"/><circle cx="180" cy="184" r="5"/><circle cx="276" cy="184" r="5"/><circle cx="372" cy="184" r="5"/><circle cx="468" cy="184" r="5"/><circle cx="180" cy="256" r="5"/><circle cx="276" cy="256" r="5"/><circle cx="372" cy="256" r="5"/><circle cx="468" cy="256" r="5"/><circle cx="180" cy="328" r="5"/><circle cx="276" cy="328" r="5"/><circle cx="372" cy="328" r="5"/><circle cx="468" cy="328" r="5"/></g>
+              <rect x="332" y="216" width="80" height="56" fill="#F2B705" stroke="#6E5235" stroke-width="3" transform="translate(0 18)"/>
+            </svg>
+          </div>
+          <figcaption>The catalogue in the reading room. Sample drawing. A real issue shows the source's own photograph, whole, with its credit.</figcaption>
+        </figure>
+        <div class="opening">
+          <p>The drawers have not moved in sixty years. Every weekday morning, before the doors open, a volunteer pulls one at random and checks that the cards still match the shelves.</p>
+          <p>The council asked twice whether the catalogue could go. Twice, the readers said no.</p>
+          <a class="btn" href="#article">Read the full piece <svg class="icon"><use href="#i-right"/></svg></a>
+        </div>
+      </div>
+    </article>
+
+    <section aria-labelledby="inside-h">
+      <div class="section-head">
+        <h2 id="inside-h">In this issue</h2>
+        <span class="small muted">Pages 2 to 5</span>
+      </div>
+      <ol class="inside">
+        <li>
+          <h3><a href="#article">Card catalogues are back in fashion, librarians say</a></h3>
+          <p class="stance"><svg class="icon"><use href="#i-parallel"/></svg>Other reporting</p>
+          <p class="meta">Weekend Review · 9 October 2026</p>
+          <a class="page-no" href="#article">Page 3</a>
+        </li>
+        <li>
+          <h3><a href="#article">The catalogue is a museum piece, and that is fine</a></h3>
+          <p class="stance"><svg class="icon"><use href="#i-contrast"/></svg>A contrasting angle</p>
+          <p class="meta">The Ledger · 14 October 2026</p>
+          <a class="page-no" href="#article">Page 4</a>
+        </li>
+        <li>
+          <h3><a href="#article">A short history of the index card</a></h3>
+          <p class="stance"><svg class="icon"><use href="#i-unplaced"/></svg>Could not place</p>
+          <p class="meta">Paper &amp; Pencil · undated</p>
+          <a class="page-no" href="#article">Page 5</a>
+        </li>
+      </ol>
+    </section>
+    <footer class="colophon"><span>Quire · Issue No. 7 · Front page</span><span>Bound from your Desk. The authors' own words, set for reading.</span></footer>
+  </div>
+  <nav class="turn" aria-label="Turn the page">
+    <div class="turn-inner">
+      <span></span>
+      <span class="folio">Front page of 5</span>
+      <a class="next" href="#article"><span>Next <svg class="icon"><use href="#i-right"/></svg></span><strong>Why the town library kept its card catalogue</strong></a>
+    </div>
+  </nav>
+</main>
+
+<!-- ============ ARTICLE PAGE ============ -->
+<main class="view" id="view-article" data-view="article" data-where="page 2 of 5">
+  <div data-appbar></div>
+  <div class="paper">
+    <p class="band"><span><strong>Page 2</strong> · From The Northfield Courier</span><a href="#article">northfield-courier.example <svg class="icon"><use href="#i-out"/></svg></a></p>
+    <div class="article">
+      <div class="resume" role="status">
+        <img src="kit/ribbon.svg" alt="">
+        <span><strong>Welcome back.</strong> You stopped at the part about the volunteers.</span>
+        <a href="#stopped" class="push">Go there</a>
+      </div>
+      <header class="article-head">
+        <h1>Why the town library kept its card catalogue</h1>
+        <p class="standfirst">Volunteers check the drawers every morning. The council asked twice if they could go.</p>
+        <p class="byline"><strong>By Ada Morrow</strong> · 12 October 2026 · about 7 minutes</p>
+      </header>
+      <figure>
+        <div class="figure-frame">
+          <svg viewBox="0 0 640 300" role="img" aria-label="Sample figure: rows of catalogue drawers, one pulled open">
+            <rect width="640" height="300" fill="#E9E1C8"/>
+            <rect x="60" y="30" width="520" height="240" fill="#8A6A45"/>
+            <g fill="#B08A5E" stroke="#6E5235" stroke-width="3"><rect x="80" y="50" width="110" height="60"/><rect x="206" y="50" width="110" height="60"/><rect x="332" y="50" width="110" height="60"/><rect x="458" y="50" width="104" height="60"/><rect x="80" y="126" width="110" height="60"/><rect x="332" y="126" width="110" height="60"/><rect x="458" y="126" width="104" height="60"/><rect x="80" y="202" width="110" height="52"/><rect x="206" y="202" width="110" height="52"/><rect x="332" y="202" width="110" height="52"/><rect x="458" y="202" width="104" height="52"/></g>
+            <rect x="196" y="140" width="130" height="64" fill="#F2B705" stroke="#6E5235" stroke-width="3"/>
+            <g fill="#F7F2DF"><rect x="214" y="122" width="16" height="28"/><rect x="236" y="118" width="16" height="32"/><rect x="258" y="124" width="16" height="26"/><rect x="280" y="120" width="16" height="30"/></g>
+          </svg>
+        </div>
+        <figcaption>A drawer pulled for the morning check. Sample drawing.</figcaption>
+      </figure>
+      <div class="article-body">
+        <p>The drawers have not moved in sixty years. Every weekday morning, before the doors open, a volunteer pulls one at random and checks that the cards still match the shelves.</p>
+        <p>The council asked twice whether the catalogue could go. Twice, the readers said no. The second time, they brought a petition with four hundred names, written on index cards.</p>
+        <h2>A slower way to find a book</h2>
+        <p>Nobody here argues that the drawers are faster than the search screen. They are not. The point, the head librarian says, is what you pass on the way.</p>
+        <p>You look for one card and read the six around it. A reader who came for a cookbook leaves with a history of salt.</p>
+        <div class="pull"><p>You look for one card and read the six around it.</p><cite>Head librarian, Northfield</cite></div>
+        <h2>Who keeps it going</h2>
+        <p class="stopped" id="stopped">Eleven volunteers share the work. Most are retired. Two are students who started for a school project and stayed. They type new cards on a typewriter the library bought in 1974.</p>
+        <p>The cost is small: card stock, ribbons for the typewriter, and one afternoon a week. The council's last review put it at less than the cost of the coffee machine.</p>
+        <div class="note-box">
+          <h2>Quire's note</h2>
+          <p>This piece argues the catalogue helps readers find books they were not looking for. The next two pages report the trend more widely and argue the opposite.</p>
+        </div>
+        <p>For now the drawers stay. The volunteers have started a new set, for books donated this year.<span class="end-mark" aria-hidden="true"></span></p>
+      </div>
+      <p class="source-foot">The author's words, fetched when this issue was bound on 18 October 2026. Read the original at <a href="#article">northfield-courier.example</a>.</p>
+    </div>
+  </div>
+  <nav class="turn" aria-label="Turn the page">
+    <div class="turn-inner">
+      <a class="prev" href="#front"><span><svg class="icon"><use href="#i-left"/></svg> Previous</span><strong>Front page</strong></a>
+      <span class="folio">Page 2 of 5</span>
+      <a class="next" href="#article"><span>Next <svg class="icon"><use href="#i-right"/></svg></span><strong>Card catalogues are back in fashion, librarians say</strong></a>
+    </div>
+  </nav>
+</main>
+
+<!-- ============ DESK ============ -->
+<main class="view" id="view-desk" data-view="desk">
+  <div class="paper desk-head">
+    <header class="masthead">
+      <img class="nameplate-img" src="kit/nameplate.svg" alt="Quire">
+      <nav class="desk-nav" aria-label="Quire">
+        <a href="#desk" aria-current="page">Desk</a>
+        <a href="#press">Press</a>
+        <a href="#desk" data-settings-toggle aria-expanded="false" aria-controls="settings"><span class="long">Reading settings</span><span class="short">Settings</span></a>
+        <a href="#signin">Sign out</a>
+      </nav>
+      <hr class="oxford">
+      <p class="desk-date"><span>Sunday 18 October 2026</span><span>4 pieces on your Desk</span></p>
+    </header>
+
+    <form class="keep" onsubmit="return false">
+      <label for="keep-url">Keep a link</label>
+      <p class="hint" id="keep-hint">Paste the address of an article. Quire saves it and reads it for you.</p>
+      <div class="keep-row">
+        <input id="keep-url" type="url" placeholder="https://" aria-describedby="keep-hint">
+        <button class="btn" type="submit">Keep</button>
+      </div>
+    </form>
+
+    <section aria-labelledby="desk-h">
+      <div class="board-head">
+        <h2 id="desk-h">Your Desk</h2>
+        <p>Tick what belongs in the next issue.</p>
+      </div>
+      <ul class="cards">
+        <li>
+          <article class="clip is-in">
+            <div class="thumb">
+              <svg viewBox="0 0 640 300" role="img" aria-label="Sample figure: catalogue drawers"><rect width="640" height="300" fill="#E9E1C8"/><rect x="120" y="30" width="400" height="240" fill="#8A6A45"/><g fill="#B08A5E" stroke="#6E5235" stroke-width="3"><rect x="140" y="50" width="80" height="60"/><rect x="236" y="50" width="80" height="60"/><rect x="332" y="50" width="80" height="60"/><rect x="428" y="50" width="76" height="60"/><rect x="140" y="126" width="80" height="60"/><rect x="236" y="126" width="80" height="60"/><rect x="428" y="126" width="76" height="60"/><rect x="140" y="202" width="80" height="52"/><rect x="236" y="202" width="80" height="52"/><rect x="332" y="202" width="80" height="52"/><rect x="428" y="202" width="76" height="52"/></g><rect x="332" y="140" width="80" height="60" fill="#F2B705" stroke="#6E5235" stroke-width="3"/></svg>
+            </div>
+            <h3><a href="#article">Why the town library kept its card catalogue</a></h3>
+            <p class="snippet">The drawers have not moved in sixty years. Every weekday morning, a volunteer checks that the cards still match the shelves.</p>
+            <p class="meta">The Northfield Courier · 12 October 2026 · Libraries</p>
+            <div class="actions">
+              <label class="tick"><input type="checkbox" checked>In the issue</label>
+              <a href="#desk">Source <svg class="icon"><use href="#i-out"/></svg></a>
+              <button class="link-btn push" type="button">Remove</button>
+            </div>
+            <details class="more" open>
+              <summary><svg class="icon chev"><use href="#i-right"/></svg>More on this topic (3)</summary>
+              <ul>
+                <li><label class="tick"><input type="checkbox" checked><span class="visually-hidden">Add to the issue</span></label>
+                  <div><p class="rel-title">Card catalogues are back in fashion, librarians say</p><p class="stance"><svg class="icon"><use href="#i-parallel"/></svg>Other reporting</p><p class="rel-meta">weekendreview.example</p></div></li>
+                <li><label class="tick"><input type="checkbox" checked><span class="visually-hidden">Add to the issue</span></label>
+                  <div><p class="rel-title">The catalogue is a museum piece, and that is fine</p><p class="stance"><svg class="icon"><use href="#i-contrast"/></svg>A contrasting angle</p><p class="rel-meta">theledger.example</p></div></li>
+                <li><label class="tick"><input type="checkbox" checked><span class="visually-hidden">Add to the issue</span></label>
+                  <div><p class="rel-title">A short history of the index card</p><p class="stance"><svg class="icon"><use href="#i-unplaced"/></svg>Could not place</p><p class="rel-meta">paperandpencil.example</p></div></li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li>
+          <article class="clip">
+            <h3><a href="#article">How a river town learned to live with floods</a></h3>
+            <p class="snippet">The water comes most winters now. The town stopped building walls and started moving the things that matter upstairs.</p>
+            <p class="meta">Valley Weekly · 3 October 2026 · Climate</p>
+            <div class="actions">
+              <label class="tick"><input type="checkbox">In the issue</label>
+              <a href="#desk">Source <svg class="icon"><use href="#i-out"/></svg></a>
+              <button class="link-btn push" type="button">Remove</button>
+            </div>
+            <details class="more">
+              <summary><svg class="icon chev"><use href="#i-right"/></svg>More on this topic (2)</summary>
+              <ul>
+                <li><label class="tick"><input type="checkbox"><span class="visually-hidden">Add to the issue</span></label><div><p class="rel-title">Insurers redraw the flood map</p><p class="stance"><svg class="icon"><use href="#i-parallel"/></svg>Other reporting</p><p class="rel-meta">harbourpost.example</p></div></li>
+                <li class="absent">A contrasting angle: not in this set.</li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li>
+          <article class="clip">
+            <h3><a href="#desk">bakery-notes.example/sourdough-at-altitude</a></h3>
+            <p class="status" role="status"><svg class="icon"><use href="#i-wait"/></svg>Reading the page…</p>
+            <div class="actions">
+              <label class="tick"><input type="checkbox">In the issue</label>
+              <a href="#desk">Source <svg class="icon"><use href="#i-out"/></svg></a>
+              <button class="link-btn push" type="button">Remove</button>
+            </div>
+          </article>
+        </li>
+        <li>
+          <article class="clip">
+            <h3><a href="#desk">longreads-archive.example/item/40211</a></h3>
+            <p class="status fail"><svg class="icon"><use href="#i-alert"/></svg>Could not read a headline from the source.</p>
+            <p class="meta">Kept 17 October 2026. You can still bind it; the issue will use the source's address.</p>
+            <div class="actions">
+              <label class="tick"><input type="checkbox">In the issue</label>
+              <a href="#desk">Source <svg class="icon"><use href="#i-out"/></svg></a>
+              <button class="link-btn push" type="button">Remove</button>
+            </div>
+          </article>
+        </li>
+      </ul>
+    </section>
+  </div>
+  <div class="bindbar">
+    <div class="bindbar-inner">
+      <p><strong>4 pieces chosen</strong><span class="detail"><br>1 kept piece and 3 more on this topic</span></p>
+      <button class="btn btn-primary" type="button">Create issue</button>
+    </div>
+  </div>
+</main>
+
+<!-- ============ PRESS ============ -->
+<main class="view" id="view-press" data-view="press">
+  <div class="paper desk-head">
+    <header class="masthead">
+      <img class="nameplate-img" src="kit/nameplate.svg" alt="Quire">
+      <nav class="desk-nav" aria-label="Quire">
+        <a href="#desk">Desk</a>
+        <a href="#press" aria-current="page">Press</a>
+        <a href="#press" data-settings-toggle aria-expanded="false" aria-controls="settings"><span class="long">Reading settings</span><span class="short">Settings</span></a>
+        <a href="#signin">Sign out</a>
+      </nav>
+      <hr class="oxford">
+      <p class="desk-date"><span>Sunday 18 October 2026</span><span>3 issues in your Press</span></p>
+    </header>
+    <section aria-labelledby="press-h">
+      <div class="board-head">
+        <h2 id="press-h">Press</h2>
+        <p>Every issue you have bound. Open one to read it again.</p>
+      </div>
+      <ul class="press-grid">
+        <li><article class="mini">
+          <a class="open" href="#front">
+            <img class="mini-np nameplate-img" src="kit/nameplate.svg" alt="">
+            <div class="mini-rule"></div>
+            <p class="mini-date">No. 7 · 18 October 2026</p>
+            <h3>Why the town library kept its card catalogue</h3>
+            <p class="meta">4 pieces · about 19 minutes</p>
+          </a>
+          <div class="actions"><span class="small muted">Read to page 2</span><button class="link-btn push" type="button">Remove</button></div>
+        </article></li>
+        <li><article class="mini">
+          <a class="open" href="#front">
+            <img class="mini-np nameplate-img" src="kit/nameplate.svg" alt="">
+            <div class="mini-rule"></div>
+            <p class="mini-date">No. 6 · 11 October 2026</p>
+            <h3>The last ferry on the estuary</h3>
+            <p class="meta">3 pieces · about 14 minutes</p>
+          </a>
+          <div class="actions"><span class="small muted">Finished</span><button class="link-btn push" type="button">Remove</button></div>
+        </article></li>
+        <li><article class="mini">
+          <a class="open" href="#front">
+            <img class="mini-np nameplate-img" src="kit/nameplate.svg" alt="">
+            <div class="mini-rule"></div>
+            <p class="mini-date">No. 5 · 4 October 2026</p>
+            <h3>What a beekeeper hears in winter</h3>
+            <p class="meta">1 piece · about 6 minutes</p>
+          </a>
+          <div class="actions"><span class="small muted">Not started</span><button class="link-btn push" type="button">Remove</button></div>
+        </article></li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<!-- ============ EMPTY STATES ============ -->
+<main class="view" id="view-empty" data-view="empty">
+  <div class="paper desk-head">
+    <header class="masthead">
+      <img class="nameplate-img" src="kit/nameplate.svg" alt="Quire">
+      <nav class="desk-nav" aria-label="Quire"><a href="#empty" aria-current="page">Desk</a><a href="#press">Press</a><a href="#empty" data-settings-toggle aria-expanded="false" aria-controls="settings"><span class="long">Reading settings</span><span class="short">Settings</span></a><a href="#signin">Sign out</a></nav>
+      <hr class="oxford">
+      <p class="desk-date"><span>Sunday 18 October 2026</span><span>Nothing on your Desk</span></p>
+    </header>
+    <form class="keep" onsubmit="return false">
+      <label for="keep-url-2">Keep a link</label>
+      <p class="hint" id="keep-hint-2">Paste the address of an article. Quire saves it and reads it for you.</p>
+      <div class="keep-row"><input id="keep-url-2" type="url" placeholder="https://" aria-describedby="keep-hint-2"><button class="btn btn-primary" type="submit">Keep</button></div>
+    </form>
+    <section aria-labelledby="empty-desk-h">
+      <div class="board-head"><h2 id="empty-desk-h">Your Desk</h2></div>
+      <p class="empty-copy">Nothing kept yet. Paste a link above to keep it.</p>
+    </section>
+    <section aria-labelledby="empty-press-h">
+      <div class="board-head"><h2 id="empty-press-h">Press</h2></div>
+      <p class="empty-copy">No issues bound yet. Tick pieces on your Desk, then choose Create issue.</p>
+    </section>
+  </div>
+</main>
+
+<!-- ============ SIGN IN ============ -->
+<main class="view" id="view-signin" data-view="signin">
+  <div class="signin">
+    <img class="nameplate-img" src="kit/nameplate.svg" alt="Quire">
+    <hr class="oxford">
+    <h1>Sign in to your press</h1>
+    <form onsubmit="return false">
+      <div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="username"></div>
+      <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" aria-describedby="pw-err">
+        <p class="error" id="pw-err"><svg class="icon"><use href="#i-alert"/></svg>That password did not match. Check it and try again.</p></div>
+      <button class="btn btn-primary" type="submit">Sign in</button>
+    </form>
+  </div>
+</main>
+
+<p class="sample">This is a static design proposal, not the app. Headlines, sources and text are invented samples; sources use .example addresses.</p>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var KEY = "quire-reading";
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+  var state = Object.assign({ tint: "newsprint", size: "m", spacing: "standard" }, load());
+  function apply() {
+    root.dataset.tint = state.tint; root.dataset.size = state.size; root.dataset.spacing = state.spacing;
+    if (load().tint) root.setAttribute("data-tint-chosen", "");
+    document.querySelectorAll(".settings input").forEach(function (i) { i.checked = state[i.name] === i.value; });
+  }
+  document.querySelectorAll(".settings input").forEach(function (i) {
+    i.addEventListener("change", function () { state[i.name] = i.value; save(state); apply(); });
+  });
+  apply();
+
+  // App bar into reading views
+  var tpl = document.getElementById("appbar-tpl");
+  document.querySelectorAll("[data-appbar]").forEach(function (slot) {
+    slot.appendChild(tpl.content.cloneNode(true));
+    var v = slot.closest(".view");
+    slot.querySelector("[data-where]").textContent = v.dataset.where;
+  });
+
+  var panel = document.getElementById("settings");
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-settings-toggle]");
+    if (!t) return;
+    e.preventDefault();
+    var open = panel.hidden;
+    panel.hidden = !open;
+    document.querySelectorAll("[data-settings-toggle]").forEach(function (b) { b.setAttribute("aria-expanded", String(open)); });
+    var view = document.querySelector(".view.is-on");
+    var anchor = view.querySelector(".appbar") || view.querySelector(".masthead");
+    anchor.after(panel);
+    if (open) panel.querySelector("input:checked").focus();
+  });
+
+  function show() {
+    var id = (location.hash || "#front").slice(1);
+    if (id === "stopped") { id = "article"; }
+    var view = document.getElementById("view-" + id) ? document.getElementById("view-" + id) : document.getElementById("view-front");
+    document.querySelectorAll(".view").forEach(function (v) { v.classList.toggle("is-on", v === view); });
+    document.querySelectorAll(".proto a").forEach(function (a) { a.toggleAttribute("aria-current", a.getAttribute("href") === "#" + view.dataset.view); if (a.hasAttribute("aria-current")) a.setAttribute("aria-current", "page"); });
+    panel.hidden = true;
+    document.querySelectorAll("[data-settings-toggle]").forEach(function (b) { b.setAttribute("aria-expanded", "false"); });
+    if (location.hash === "#stopped") { document.getElementById("stopped").scrollIntoView({ block: "center" }); } else { window.scrollTo(0, 0); }
+  }
+  window.addEventListener("hashchange", show);
+  show();
+
+  // Arrow keys turn the page on reading views.
+  document.addEventListener("keydown", function (e) {
+    if (e.target.closest("input, textarea")) return;
+    var v = document.querySelector(".view.is-on");
+    if (!v || !v.querySelector(".turn")) return;
+    if (e.key === "ArrowRight") { var n = v.querySelector(".turn .next"); if (n) location.hash = n.getAttribute("href"); }
+    if (e.key === "ArrowLeft") { var p = v.querySelector(".turn .prev"); if (p) location.hash = p.getAttribute("href"); }
+  });
+})();
+</script>
+</body>
+</html>

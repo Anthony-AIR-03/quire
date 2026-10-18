@@ -26,10 +26,18 @@ export function blockMatches(text: string, start: string | null): boolean {
   return blockStart(text) === blockStart(start);
 }
 
-/** A sheet worth offering to go back to: past the cover and still in the issue. */
-export function resumeSheet(bookmark: Pick<SavedPlace, "sheet"> | null, sheetCount: number): number | null {
+/**
+ * A place worth offering to go back to: still in the issue, and past the
+ * opening sheet, or down the page on it (a kept piece read on its own has
+ * only one sheet).
+ */
+export function resumeSheet(
+  bookmark: (Pick<SavedPlace, "sheet"> & Partial<Pick<SavedPlace, "block">>) | null,
+  sheetCount: number,
+): number | null {
   if (!bookmark) return null;
   const sheet = Math.trunc(bookmark.sheet);
-  if (!Number.isFinite(sheet) || sheet <= 0 || sheet >= sheetCount) return null;
+  if (!Number.isFinite(sheet) || sheet < 0 || sheet >= sheetCount) return null;
+  if (sheet === 0 && (bookmark.block === null || bookmark.block === undefined)) return null;
   return sheet;
 }

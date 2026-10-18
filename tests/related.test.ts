@@ -653,9 +653,8 @@ describe("related rail stays a search slot, not Grok web_search", () => {
     expect(queries).not.toMatch(/search_parameters/);
     expect(understanding).toMatch(/must not call web_search/);
     expect(existsSync("src/routes/press.tsx")).toBe(false);
-    expect(css).toMatch(/--paper: #faf7f1;/);
-    expect(css).toMatch(/--ink: #1c1814;/);
-    expect(css).toMatch(/--binding: #4a5c56;/);
+    expect(css).toMatch(/--paper: #f7f2df;/);
+    expect(css).toMatch(/--ink: #22201b;/);
     expect(related).not.toMatch(/britannica|encyclopedia|wiktionary|wikimedia/i);
     expect(related).toMatch(/wikipedia\.org/);
     expect(Object.keys(searchApis)).toEqual(["search_api"]);

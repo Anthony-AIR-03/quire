@@ -142,8 +142,27 @@ function decodeEntities(value: string) {
     .replace(/&gt;/gi, ">");
 }
 
+/** Inline tags sit inside a word or phrase; removing them must not open a gap ("System , is"). */
+const INLINE_TAG = /<\/?(?:a|abbr|b|bdi|bdo|cite|code|data|dfn|em|i|kbd|mark|q|s|samp|small|span|strong|sub|sup|time|u|var)\b[^>]*>/gi;
+
 function stripTags(value: string) {
-  return decodeEntities(value.replace(/<[^>]+>/g, " "));
+  const text = value
+    // Footnote and citation markers ("[1]") are links into a reference list the reader never sees.
+    .replace(/<sup\b[^>]*class=["'][^"']*\breference\b[^"']*["'][^>]*>[\s\S]*?<\/sup>/gi, "")
+    .replace(INLINE_TAG, "")
+    .replace(/<[^>]+>/g, " ");
+  return decodeEntities(text)
+    .replace(/\[\s*\d+\s*\]/g, "")
+    .replace(/\s+([,.;:!?)\]])/g, "$1")
+    .replace(/([([])\s+/g, "$1");
+}
+
+/** Cut at a word boundary and say so, so nothing ends mid-word. */
+function clipWords(text: string, max: number) {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }
 
 function sliceTagged(html: string, tag: string) {
@@ -249,8 +268,10 @@ function figureCaptionFrom(html: string) {
 }
 
 function figureCreditFrom(html: string) {
-  const cite = html.match(/<figure\b[\s\S]*?<cite\b[^>]*>([\s\S]*?)<\/cite>/i);
-  if (cite?.[1]) return compactText(stripTags(cite[1]), 200);
+  // Only a <cite> inside the figure itself credits the picture; one further down is a reference.
+  const figure = html.match(/<figure\b[^>]*>([\s\S]*?)<\/figure>/i)?.[1] ?? "";
+  const cite = figure.match(/<cite\b[^>]*>([\s\S]*?)<\/cite>/i);
+  if (cite?.[1]) return clipWords(compactText(stripTags(cite[1]), 2000), 200);
   return (
     metaContent(html, "copyright", 200) ||
     metaContent(html, "credit", 200) ||

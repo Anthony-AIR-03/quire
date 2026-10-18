@@ -21,255 +21,160 @@ const issue: BoundIssue = {
   ],
 };
 
-describe("bound magazine sheet", () => {
-  it("Read is cover / contents / sequence, not opener + Take aside", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    expect(read).toMatch(/data-sheet=\{kind\}/);
-    expect(read).toMatch(/sheet-cover/);
-    expect(read).toMatch(/sheet-contents/);
-    expect(read).toMatch(/sheet-piece/);
-    expect(read).toMatch(/readingSheets\(page\)/);
-    expect(read).toMatch(/current\?\.kind === "cover"/);
-    expect(read).toMatch(/current\?\.kind === "contents"/);
-    expect(read).toMatch(/piece \? <PieceSheet/);
-    expect(read).not.toMatch(/className="opener"/);
-    expect(read).not.toMatch(/className="spread"/);
-    expect(read).not.toMatch(/className="aside"/);
-    expect(read).not.toMatch(/className="lead-copy"/);
-    expect(read).not.toMatch(/takeLabel/);
-    expect(read).not.toMatch(/>Take</);
-    expect(read).not.toMatch(/The take/);
-    expect(read).not.toMatch(/TL;DR|tl;dr/);
-    expect(read).not.toMatch(/href=\{/);
-    expect(read).not.toMatch(/page\.opener/);
-    expect(read).toMatch(/className="take"/);
-    expect(read).toMatch(/sheet\.take \?/);
-    expect(read).not.toMatch(/Inside ·/);
-    expect(read).not.toMatch(/Inside/);
-    expect(read).toMatch(/printThisIssue/);
-    expect(read).toMatch(/className="stage-print"/);
-    expect(read).not.toMatch(/window\.print|printIssue/);
-  });
+const read = () => readFileSync("src/routes/read.$id.tsx", "utf8");
+const css = () => readFileSync("src/styles.css", "utf8").replace(/\r\n/g, "\n");
 
-  it("does not print a Take kicker or a raw source URL as the folio", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    const css = readFileSync("src/styles.css", "utf8");
+describe("Read: the Sunday Bundle", () => {
+  it("opens a bound issue on its front page, then one piece per page", () => {
+    const source = read();
     const page = composeIssue(issue);
-    expect(page.sequence[0]?.folio).toBe("03");
-    expect(page.contents.folio).toBe("02");
-    expect(page.sequence[0]?.folio).toMatch(/^\d+$/);
-    expect(page.contents.folio).toMatch(/^\d+$/);
-    expect(page.contents.rows[0]?.folio).toMatch(/^\d+$/);
-    expect(page.sequence[0]?.folio).not.toMatch(/https?:\/\//);
-    expect(page.cover.meta).not.toMatch(/https?:\/\//);
-    expect(page.contents.rows[0]?.folio).not.toMatch(/http/);
-    expect(read).not.toMatch(/folio">Contents</);
-    expect(read).toMatch(/page\.contents\.folio/);
-    expect(read).not.toMatch(/sheet\.url|piece\.url|lead\.url|opener\.source/);
-    expect(read).toMatch(/sheet\.folio/);
-    expect(read).toMatch(/className="take"/);
-    expect(read).not.toMatch(/kicker">\{take/);
-    expect(css).toMatch(/\.take \{/);
-    expect(css).toMatch(/border-top:\s*1px solid var\(--ink\)/);
-    expect(css).toMatch(/border-bottom:\s*1px solid var\(--ink\)/);
-    expect(css).toMatch(/font-style:\s*italic/);
-    expect(css).not.toMatch(/\.take[^{]*\{[^}]*2px/);
+    expect(readingSheets(page).map((sheet) => sheet.kind)).toEqual(["front", "piece"]);
+    expect(readingSheets(page, { front: false }).map((sheet) => sheet.kind)).toEqual(["piece"]);
+    expect(source).toMatch(/const front = bound;/);
+    expect(source).toMatch(/readingSheets\(page, \{ front \}\)/);
+    expect(source).toMatch(/isFront \? "sheet-front" : "sheet-piece"/);
+    expect(source).toMatch(/<FrontPage/);
+    expect(source).toMatch(/<PieceSheet/);
+    expect(source.match(/<article/g)?.length).toBe(1);
+    expect(source).not.toMatch(/sheets\.map\(\(sheet\) => <|className="spread"|isMobile|useMediaQuery/);
   });
 
-  it("keeps primary navigation inside Quire", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    expect(read).toMatch(/<Link to="\/" aria-label=\{productName\}>/);
-    expect(read).toMatch(/<QuireMark/);
-    expect(read).not.toMatch(/target="_blank"/);
-    expect(read).not.toMatch(/href=\{[^}]*url/);
-    expect(read).not.toMatch(/window\.open/);
+  it("sets a front page with factual ears, the nameplate, a dateline and the rest of the issue", () => {
+    const source = read();
+    const front = source.slice(source.indexOf("function FrontPage"), source.indexOf("function pieceBlocks"));
+    expect(front).toMatch(/className="ear"/);
+    expect(front).toMatch(/\{issueName\}<\/strong>Bound \{shortDate\(createdAt\)\}/);
+    expect(front).toMatch(/piecesCopy\(page\.sequence\.length\)/);
+    expect(front).toMatch(/minutesCopy\(minutes\)/);
+    expect(front).toMatch(/<Nameplate \/>/);
+    expect(front).toMatch(/<OxfordRule \/>/);
+    expect(front).toMatch(/className="dateline"/);
+    expect(front).toMatch(/className="skyline"/);
+    expect(front).toMatch(/openingParagraphs\(lead\.paragraphs\)/);
+    expect(front).toMatch(/lead\.standfirst \? <p className="standfirst">/);
+    expect(front).toMatch(/readFullPiece/);
+    // The one reversed element on the front page is the dateline; the action is outlined.
+    expect(front).toMatch(/<button type="button" className="btn" onClick=\{\(\) => onOpen\(0\)\}>/);
+    expect(front).not.toMatch(/btn-primary/);
+    const dateline = css().match(/\n\.dateline \{([^}]+)\}/)?.[1] ?? "";
+    expect(dateline).toMatch(/background: var\(--band-ink\)/);
   });
 
-  it("Read is one sheet at a time on a binding-cloth stage", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    const css = readFileSync("src/styles.css", "utf8");
-    const keep = readFileSync("src/routes/index.tsx", "utf8");
+  it("labels every front-page link with the page number it opens", () => {
+    const source = read();
+    const front = source.slice(source.indexOf("function FrontPage"), source.indexOf("function pieceBlocks"));
+    // A link at \`at\` in the rest of the issue opens piece at + 1; the folio there reads its sheet + 1.
+    expect(front.match(/onOpen\(at \+ 1\)/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(front.match(/pieceSheetIndex\(at \+ 1, \{ front: true \}\) \+ 1/g)?.length).toBe(2);
+    expect(source).toMatch(/pieceSheetIndex\(pieceIndex, \{ front \}\)/);
+    expect(source).toMatch(/pageOf\(index \+ 1, total\)/);
+    expect(front).toContain("Pages 3 to ${total}");
+    // With a lead and two more pieces: the second piece (rest[0]) is on page 3.
+    expect(pieceSheetIndex(0 + 1, { front: true }) + 1).toBe(3);
+  });
+
+  it("opens each piece on a marigold section band, in one column, ending with an end mark", () => {
+    const source = read();
+    const piece = source.slice(source.indexOf("function PieceSheet"), source.indexOf("function SheetPhoto"));
+    expect(piece).toMatch(/<p className="band">/);
+    expect(piece).toMatch(/fromSource\(source\)/);
+    expect(piece).toMatch(/<div className="article">/);
+    expect(piece).toMatch(/<h1>\{sheet\.headline\}<\/h1>/);
+    expect(piece).toMatch(/className="end-mark"/);
+    expect(piece).toMatch(/wordsFetched\(boundOn\)/);
+    expect(piece).not.toMatch(/className=\{[^}]*"drop"/);
+    const band = css().match(/\n\.band \{([^}]+)\}/)?.[1] ?? "";
+    expect(band).toMatch(/background: var\(--marigold\)/);
+    expect(band).toMatch(/color: var\(--on-marigold\)/);
+  });
+
+  it("labels the take as Quire's note, upright, so it is never the author's words", () => {
+    const source = read();
+    expect(source).toMatch(/<aside className="note-box">\s*<h2>\{takeLabel\}<\/h2>/);
+    expect(source).not.toMatch(/>Take</);
+    expect(source).not.toMatch(/TL;DR|tl;dr/);
+    expect(css()).not.toMatch(/\.take \{/);
+  });
+
+  it("never invents a cover line, standfirst, folio URL or kicker", () => {
     const page = composeIssue(issue);
-    expect(readingSheets(page).map((sheet) => sheet.kind)).toEqual(["cover", "contents", "piece"]);
-    expect(read).toMatch(/className="stage"/);
-    expect(read).toMatch(/className="stage-chrome"/);
-    expect(read).toMatch(/className="stage-well"/);
-    expect(read).not.toMatch(/className="sheets"/);
-    expect(read).not.toMatch(/className="spread"/);
-    expect(read).not.toMatch(/className="page issue"/);
-    expect(css).toMatch(/\.stage \{[\s\S]*var\(--binding\)/);
-    expect(css).toMatch(/\.stage \{[\s\S]*var\(--ink\)/);
-    expect(css).not.toMatch(/\.stage \{[\s\S]*#000/);
-    expect(css).not.toMatch(/\.stage \{[\s\S]*#111/);
-    expect(css).not.toMatch(/wood|#5c4033|#8b5a2b|#3e2723/i);
-    expect(css).toMatch(/\.sheet \{[\s\S]*background: var\(--paper\)/);
-    expect(css).toMatch(/\.sheet \{[\s\S]*border-radius:\s*0/);
-    expect(css).toMatch(/\.sheet \{[\s\S]*box-shadow: 0 10px 28px/);
-    expect(css).toMatch(/\.sheet:hover \{[\s\S]*transform:\s*none/);
-    expect(css).toMatch(/\.sheet:hover \{[\s\S]*box-shadow: 0 10px 28px/);
-    expect(css).not.toMatch(/page-curl|perspective|rotateY|flip-book|page-flip/i);
-    expect(css).not.toMatch(/\.sheet:hover \{[^}]*translateY/);
-    expect(css).not.toMatch(/rounded-\[28px\]/);
-    expect(css).not.toMatch(/mute-pine|#3d5a4c|#2f4f3e/i);
-    expect(css).toMatch(/--paper: #faf7f1;/);
-    expect(css).toMatch(/--ink: #1c1814;/);
-    expect(css).toMatch(/--binding: #4a5c56;/);
-    expect(keep).not.toMatch(/className="stage"/);
-    expect(keep).toMatch(/className="card/);
-  });
-
-  it("keeps app chrome on the stage, not on the paper", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    expect(read).toMatch(/<nav className="stage-chrome">/);
-    expect(read).toMatch(/<Link to="\/" aria-label=\{productName\}>/);
-    expect(read).toMatch(/<QuireMark/);
-    expect(read.indexOf("stage-chrome")).toBeLessThan(read.indexOf("stage-well"));
-    expect(read).not.toMatch(/<nav className="issue-nav">/);
-    expect(read).not.toMatch(/className="sheet[^"]*"[^>]*>[\s\S]*stage-chrome/);
-  });
-
-  it("photos contain unless Intent already says cover", () => {
-    const css = readFileSync("src/styles.css", "utf8");
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    expect(css).toMatch(/\.sheet-figure\.contain img \{[\s\S]*object-fit:\s*contain/);
-    expect(css).toMatch(/\.sheet-figure\.cover img \{[\s\S]*object-fit:\s*cover/);
-    expect(read).toMatch(/figure\.fit === "cover" \? "sheet-figure cover" : "sheet-figure contain"/);
-    const page = composeIssue(issue);
-    expect(page.sequence[0]?.figure?.fit).toBe("contain");
-  });
-
-  it("omits the cover kicker element when there is no source-owned cover line", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
     const compose = readFileSync("src/lib/compose.ts", "utf8");
-    const page = composeIssue(issue);
     expect(kicker).toBe("A personal press");
     expect(page.cover.kicker).toBeUndefined();
+    expect(page.sequence[0]?.standfirst).toBeUndefined();
     expect(JSON.stringify(page.cover)).not.toMatch(/A personal press/);
-    expect(page.contents.kicker).toBe("In this issue");
-    expect(page.cover.masthead).toBe("Quire");
     expect(compose).not.toMatch(/import \{[^}]*\bkicker\b/);
-    expect(compose).not.toMatch(/A personal press/);
-    expect(read).toMatch(/page\.cover\.kicker \? <p className="kicker">\{page\.cover\.kicker\}<\/p> : null/);
-    expect(read).toMatch(/page\.contents\.kicker/);
-    expect(read).toMatch(/page\.cover\.masthead/);
-    expect(read).not.toMatch(/\bPress\b/);
-    expect(read).not.toMatch(/\/clips\/\$/);
+    expect(page.sequence[0]?.folio).toMatch(/^\d+$/);
+    expect(read()).not.toMatch(/Inside ·|\bPress\b|\/clips\/\$/);
   });
 
-  it("does not copy lucide, shadcn, sonner, notes, BindDialog, or a /clips reader", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    expect(read).not.toMatch(/lucide-react|sonner|@\/components\/ui|BindDialog|notes/);
-    expect(read).not.toMatch(/\/clips\/\$/);
-    expect(read).not.toMatch(/\bPress\b/);
+  it("keeps navigation inside Quire, and the source one honest link away", () => {
+    const source = read();
+    expect(source).toMatch(/<Link className="home" to="\/">\s*<Nameplate label="Quire, back to the Desk" \/>/);
+    expect(source).not.toMatch(/window\.open|window\.print|printIssue/);
+    // The only links out are the source itself, labelled with its host.
+    const outbound = [...source.matchAll(/href=\{([^}]+)\}/g)].map((match) => match[1]);
+    expect(new Set(outbound)).toEqual(new Set(["sheet.url"]));
+    expect(source).toMatch(/target="_blank" rel="noreferrer"/);
   });
 
-  it("sets sheet type: Serif body in band, Sans chrome, no third font, no Inside ·", () => {
-    const css = readFileSync("src/styles.css", "utf8");
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    const root = readFileSync("src/routes/__root.tsx", "utf8");
-    const save = readFileSync("src/lib/save.ts", "utf8");
-    const page = composeIssue(issue);
-    const body = css.match(/\.piece-body \{([^}]+)\}/)?.[1] ?? "";
-    const size = Number(/font-size:\s*([\d.]+)px/.exec(body)?.[1]);
-    const leading = Number(/line-height:\s*([\d.]+)/.exec(body)?.[1]);
-    const measure = Number(/max-width:\s*([\d.]+)ch/.exec(body)?.[1]);
-    const families = [...root.matchAll(/family=([^:&]+)/g)].map((match) => match[1]);
-
-    expect(css).toMatch(/--font-serif:\s*"Source Serif 4"/);
-    expect(css).toMatch(/--font-sans:\s*"Source Sans 3"/);
-    expect(body).toMatch(/font-family:\s*var\(--font-serif\)/);
-    expect(size).toBeGreaterThanOrEqual(16);
-    expect(size).toBeLessThanOrEqual(18);
-    expect(leading).toBeGreaterThanOrEqual(1.65);
-    expect(leading).toBeLessThanOrEqual(1.7);
-    expect(measure).toBeGreaterThanOrEqual(45);
-    expect(measure).toBeLessThanOrEqual(75);
-
-    expect(css).toMatch(/\.running-head[\s\S]*?font-family:\s*var\(--font-sans\)/);
-    expect(css).toMatch(/\.sheet \.folio \{[\s\S]*?font-family:\s*var\(--font-sans\)/);
-    expect(css).toMatch(/\.kicker \{[\s\S]*?font-family:\s*var\(--font-sans\)/);
-    expect(css).toMatch(/\.sheet-cover h1 \{[\s\S]*font-family:\s*var\(--font-serif\)/);
-    expect(css).toMatch(/\.sheet-cover h1 \{[\s\S]*font-weight:\s*600/);
-    expect(css).toMatch(/\.sheet-piece \.piece-header h2 \{[\s\S]*font-weight:\s*600/);
-    expect(css).toMatch(/\.take \{[\s\S]*font-style:\s*italic/);
-    expect(css).toMatch(/\.take \{[\s\S]*border-top:\s*1px solid var\(--ink\)/);
-    expect(css).toMatch(/--paper: #faf7f1;/);
-    expect(css).toMatch(/--ink: #1c1814;/);
-    expect(css).toMatch(/--binding: #4a5c56;/);
-
-    expect(read).not.toMatch(/Inside ·/);
-    expect(read).not.toMatch(/Inside/);
-    expect(read).not.toMatch(/>Take</);
-    expect(read).not.toMatch(/takeLabel/);
-    expect(read).toMatch(/page\.cover\.kicker \? <p className="kicker">\{page\.cover\.kicker\}<\/p> : null/);
-    expect(page.cover.kicker).toBeUndefined();
-    expect(page.contents.folio).toBe("02");
-    expect(page.sequence[0]?.folio).toBe("03");
-
-    expect(families).toEqual(["Source+Sans+3", "Source+Serif+4"]);
-    expect(css).not.toMatch(/Playfair|Fraunces|Newsreader|Instrument|Cormorant|Libre Baskerville|IBM Plex|Inter["']/);
-    expect(root).not.toMatch(/Playfair|Fraunces|Newsreader|family=Source\+Serif\+4.*family=/);
-
-    expect(read).not.toMatch(/\bPress\b/);
-    expect(read).not.toMatch(/\/clips\/\$/);
-    expect(save).toMatch(/store\.insert\(/);
-    expect(save).toMatch(/persistUnderstanding/);
-    expect(save).toMatch(/persistRelated/);
-    expect(save).toMatch(/persistSourceHeadline/);
-  });
-
-  it("lets TOC reach sheets and next advance the same object", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    const css = readFileSync("src/styles.css", "utf8");
+  it("turns pages with Previous / Next, the contents, the skyline and the arrow keys", () => {
+    const source = read();
     const page = composeIssue(issue);
     const sheets = readingSheets(page);
-
-    expect(read.match(/<article/g)?.length).toBe(1);
-    expect(read).toMatch(/goTo\(/);
-    expect(read).toMatch(/pieceSheetIndex\(rowIndex\)/);
-    expect(read).toMatch(/nextSheetIndex\(index, sheets\.length\)/);
-    expect(read).toMatch(/previousSheetIndex\(index, sheets\.length\)/);
-    expect(read).toMatch(/className="toc-row"/);
-    expect(read).toMatch(/toc-row[\s\S]{0,80}onClick/);
-    expect(read).toMatch(/is-turning/);
-    expect(read).not.toMatch(/sheets\.map/);
-    expect(read).not.toMatch(/className="spread"/);
-    expect(read).not.toMatch(/isMobile|useMediaQuery|desktopSpread|mobileSheet/);
-    expect(read).not.toMatch(/page-flip|stpageflip|turn\.js|react-pageflip|pageflip/i);
-
-    expect(pieceSheetIndex(0)).toBe(2);
+    expect(source).toMatch(/<nav className="turn" aria-label="Turn the page">/);
+    expect(source).toMatch(/nextSheetIndex\(index, sheets\.length\)/);
+    expect(source).toMatch(/previousSheetIndex\(index, sheets\.length\)/);
+    expect(source).toMatch(/pieceSheetIndex\(pieceIndex, \{ front \}\)/);
+    expect(source).toMatch(/event\.key === "ArrowRight"/);
+    expect(source).toMatch(/event\.key === "ArrowLeft"/);
+    expect(source).toMatch(/pageOf\(index \+ 1, total\)/);
+    expect(source).toMatch(/is-turning/);
+    expect(source).toMatch(/window\.scrollTo\(0, 0\)/);
+    expect(pieceSheetIndex(0)).toBe(1);
     expect(sheets[pieceSheetIndex(0)]?.kind).toBe("piece");
     expect(nextSheetIndex(0, sheets.length)).toBe(1);
-    expect(nextSheetIndex(1, sheets.length)).toBe(2);
-    expect(nextSheetIndex(2, sheets.length)).toBe(2);
-
-    expect(css).toMatch(/\.sheet\.is-turning/);
-    expect(css).toMatch(/translateX\(-5%\) rotate\(-0\.8deg\)/);
-    expect(css).not.toMatch(/page-curl|curl-corner|flip-book|page-flip|stpageflip/i);
-    expect(css).not.toMatch(/perspective|rotateY/i);
-    expect(css).not.toMatch(/two-page|page-spread|verso|recto/i);
+    expect(nextSheetIndex(1, sheets.length)).toBe(1);
+    const turn = css().match(/\n\.turn \{([^}]+)\}/)?.[1] ?? "";
+    expect(turn).toMatch(/position: sticky/);
+    expect(css()).toMatch(/\.turn button \{[\s\S]*min-height: 48px/);
   });
 
-  it("keeps mobile as a single-column same object, not a pinch-PDF", () => {
-    const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    const css = readFileSync("src/styles.css", "utf8");
+  it("puts the app bar outside the paper, with Contents, Reading settings and Print", () => {
+    const source = read();
+    expect(source.indexOf('className={isFront ? "appbar is-front" : "appbar"}')).toBeLessThan(
+      source.indexOf('<div className="paper">'),
+    );
+    expect(source).toMatch(/contentsLabel/);
+    expect(source).toMatch(/<ReadingSettingsPanel id="reading-settings" open=\{settingsOpen\} \/>/);
+    expect(source).toMatch(/printThisIssue/);
+    expect(source).toMatch(/aria-controls="reading-settings"/);
+  });
+
+  it("shows the ribbon where the reader stopped, and offers to continue", () => {
+    const source = read();
+    expect(source).toMatch(/function Resume\(/);
+    expect(source).toMatch(/className="resume" role="status"/);
+    expect(source).toMatch(/continueReadingLabel\(resumeAt \+ 1, total\)/);
+    expect(source).toMatch(/"stopped" : undefined/);
+    expect(css()).toMatch(/\.stopped::before \{[\s\S]*url\("\.\/assets\/ribbon\.svg"\)/);
+  });
+
+  it("contains photographs whole and caps their height", () => {
+    const styles = css();
+    const frame = styles.match(/\n\.figure-frame img \{([^}]+)\}/)?.[1] ?? "";
+    expect(frame).toMatch(/object-fit: contain/);
+    expect(frame).toMatch(/max-height: 26rem/);
+    expect(styles).toMatch(/\.lead \.figure-frame img \{\n\s*max-height: 18rem;/);
+    expect(styles).not.toMatch(/object-fit:\s*cover/);
+    expect(composeIssue(issue).sequence[0]?.figure?.fit).toBe("contain");
+  });
+
+  it("keeps print and PDF libraries off the page and the flipbook out", () => {
+    const source = read();
     const pkg = readFileSync("package.json", "utf8");
-    const lock = readFileSync("package-lock.json", "utf8");
-
-    expect(css).toMatch(/@media \(max-width: 48rem\) \{[\s\S]*flex-direction:\s*column/);
-    expect(css).toMatch(/@media \(max-width: 48rem\) \{[\s\S]*column-count:\s*1/);
-    expect(css).toMatch(/@media \(max-width: 48rem\) \{[\s\S]*\.toc-row \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto/);
-    expect(read).not.toMatch(/matchMedia\(["']\(max-width/);
-    expect(read).not.toMatch(/isMobile|useMediaQuery/);
-    expect(read.match(/<article/g)?.length).toBe(1);
-
-    expect(read).not.toMatch(/pdfjs|pdf\.js|react-pdf|application\/pdf|embed.*pdf|iframe.*pdf/i);
-    expect(css).not.toMatch(/pinch-zoom|touch-action:\s*pinch-zoom/i);
+    expect(source).not.toMatch(/pdfjs|react-pdf|application\/pdf|iframe/i);
     expect(pkg).not.toMatch(/pdfjs|react-pdf|page-flip|stpageflip|react-pageflip|turn\.js/i);
-    expect(lock).not.toMatch(/page-flip|stpageflip|react-pageflip|turn\.js/i);
-    expect(read).not.toMatch(/\bPress\b/);
-    expect(read).not.toMatch(/\/clips\/\$/);
-    expect(read).toMatch(/printThisIssue/);
-    expect(read).not.toMatch(/window\.print|printIssue/);
+    expect(source).not.toMatch(/lucide-react|sonner|@\/components\/ui|BindDialog/);
   });
 });

@@ -44,25 +44,25 @@ describe("product voice", () => {
     expect(headline).toBe("Save the links.");
     expect(dek).toMatch(/one reader/i);
     expect(dek).toMatch(/Not a patch on quire-bind/);
-    expect(emptyState).toMatch(/Paste a URL/);
+    expect(emptyState).toMatch(/Paste a link/);
+    expect(emptyState).not.toMatch(/URL/);
     expect(couldNotUnderstand).toMatch(/Could not understand/);
     expect(createIssueLabel).toBe("Create issue");
     expect(sourceLabel).toBe("Source");
-    expect(inLabel).toBe("In");
-    expect(inLabel.length).toBeLessThan(8);
+    expect(inLabel).toBe("In the issue");
     expect(removeLabel).toBe("Remove");
-    expect(removeIssueAsk).toMatch(/Return the pieces to Desk/);
-    expect(returnToDeskLabel).toBe("Return the pieces to Desk.");
-    expect(removePiecesTooLabel).toBe("Remove the pieces too.");
+    expect(removeIssueAsk).toMatch(/back to your Desk/);
+    expect(returnToDeskLabel).toBe("Put pieces back on the Desk");
+    expect(removePiecesTooLabel).toBe("Remove the pieces too");
     expect(pressLabel).toBe("Press");
-    expect(pressEmpty).toMatch(/library/i);
+    expect(pressEmpty).toMatch(/No issues bound yet/);
     expect(pressEmpty).not.toMatch(/Could not|fail|Create the issue/i);
     expect(pressCoverMeta({ createdAt: "2026-09-01T00:00:00.000Z", pieces: { length: 1 } })).toMatch(
       /One piece · 2026-09-01/,
     );
     expect(contentsKicker).toBe("In this issue");
     expect(originalInByDefault).toMatch(/unless you take it out/);
-    expect(takeLabel).toBe("Take");
+    expect(takeLabel).toBe("Quire's note");
     expect(takeLabel).not.toMatch(/TL;DR|tl;dr/);
     expect(printThisIssue).toBe("Print this issue");
     expect(printThisIssue).not.toMatch(/Press|PDF/);

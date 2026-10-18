@@ -513,7 +513,7 @@ describe("create issue binds a visible magazine page", () => {
         memoryIssues(),
         { fetchWords: async () => originalWords },
       ),
-    ).rejects.toThrow(/Select something to bind/);
+    ).rejects.toThrow(/Tick at least one piece/);
     expect(clips.rows.has(clip.id)).toBe(true);
   });
 

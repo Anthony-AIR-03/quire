@@ -674,45 +674,36 @@ describe("Designer UI lock", () => {
     expect(readFileSync("src/copy.ts", "utf8")).toMatch(/export const contentsKicker = "In this issue"/);
   });
 
-  it("puts Desk stance under the related headline in muted Sans, quiets Could not place, and uses no red, icon, or fourth hex", () => {
+  it("puts Desk stance under the related headline as a drawn icon and a word, never red", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     const css = readFileSync("src/styles.css", "utf8");
+    const icons = readFileSync("src/icons.tsx", "utf8");
     const related = keep.slice(keep.indexOf("function RelatedItem"));
     expect(related.indexOf("row.title")).toBeLessThan(related.indexOf("row.stance"));
     expect(related.indexOf("row.stance")).toBeLessThan(related.indexOf("row.snippet"));
-    expect(related).toMatch(/row\.stance \? \(/);
     expect(related).toMatch(/row\.stance \? \([\s\S]*stanceCopy\(row\.stance\)[\s\S]*\) : null/);
-    expect(related).toMatch(/stance === "inconclusive" \? "stance quiet" : "stance"/);
-    expect(related).toMatch(/stanceCopy\(row\.stance\)/);
-    expect(related).not.toMatch(/className="fail"|lucide|svg|<img|⚠|✘|✗|✓|●|icon|AI labeled/i);
-    expect(related).not.toMatch(/disabled=\{page\.stance/);
-    expect(related).toMatch(/className="include"/);
-    expect(keep).toMatch(/railAbsentCopy\("comparable"\)/);
-    expect(keep).toMatch(/className="stance"\>\{railAbsentCopy/);
-    expect(keep).not.toMatch(/className="empty"\>\{railAbsentCopy/);
-    expect(keep).not.toMatch(/className="fail"\>\{railAbsentCopy/);
-    expect(css).toMatch(/--muted: color-mix\(in srgb, var\(--ink\) 58%, var\(--paper\)\)/);
-    expect(css).toMatch(/button\.related-title \{[\s\S]*font-family:\s*var\(--font-serif\)/);
-    expect(css).toMatch(/\.rail li \.stance \{[\s\S]*font-family:\s*var\(--font-sans\)[\s\S]*color:\s*var\(--muted\)/);
-    expect(css).toMatch(/\.rail li \.stance\.quiet \{[\s\S]*color-mix\(in srgb, var\(--ink\) 42%/);
-    expect(css).toMatch(/--paper: #faf7f1;/);
-    expect(css).toMatch(/--ink: #1c1814;/);
-    expect(css).toMatch(/--binding: #4a5c56;/);
+    // Status never by colour alone (BDA): every stance is a drawn icon next to its word.
+    expect(related).toContain("<Icon name={stanceIcon[row.stance]} />");
+    expect(icons).toMatch(/comparable: "parallel"/);
+    expect(icons).toMatch(/contrarian: "contrast"/);
+    expect(icons).toMatch(/inconclusive: "unplaced"/);
+    expect(related).not.toMatch(/className="fail"|lucide|<img|⚠|✘|✗|✓|●|AI labeled/i);
+    expect(related).not.toContain("disabled={page.stance");
+    expect(keep).toContain('railAbsentCopy("comparable")');
+    expect(keep).toContain('className="absent">{railAbsentCopy');
+    expect(keep).not.toContain('className="fail">{railAbsentCopy');
     expect(css).not.toMatch(/AI labeled/i);
     expect(keep).not.toMatch(/AI labeled/i);
     expect(readFileSync("src/routes/read.$id.tsx", "utf8")).not.toMatch(/AI labeled/i);
-    const stanceBlocks = [...css.matchAll(/\.rail li \.stance[^{]*\{[^}]+\}/g)].map((match) => match[0]);
-    expect(stanceBlocks.length).toBeGreaterThanOrEqual(2);
-    for (const block of stanceBlocks) {
-      expect(block).toMatch(/var\(--ink\)|var\(--paper\)|var\(--muted\)/);
-      expect(block).not.toMatch(/#c00|#e00|#f00|red|crimson|tomato|salmon|orange|#[0-9a-f]{3,8}/i);
-    }
+    const stanceBlock = css.match(/\n\.stance \{[^}]+\}/)?.[0] ?? "";
+    expect(stanceBlock).toMatch(/font-weight:\s*700/);
+    expect(stanceBlock).not.toMatch(/#c00|#e00|#f00|red|crimson|tomato|salmon|orange|#[0-9a-f]{3,8}/i);
   });
 
   it("leaves Select free for every stance", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     const related = keep.slice(keep.indexOf("function RelatedItem"));
-    expect(related).toMatch(/onToggle\(page\.url, !on\)/);
+    expect(related).toContain("onToggle(page.url, event.currentTarget.checked)");
     expect(related).not.toMatch(/disabled=\{/);
     expect(chosenPieces(
       {
@@ -817,24 +808,17 @@ describe("Designer UI lock", () => {
     expect(judged.cover.masthead).toBe("Quire");
     expect(judged.take).toBeUndefined();
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
-    const contents = read.slice(read.indexOf('className="toc-row"'), read.indexOf("function PieceSheet"));
-    expect(read).toMatch(/className="toc-absent"/);
-    expect(contents).toMatch(/stanceCopy\(row\.stance\)/);
-    expect(contents.indexOf("toc-stance")).toBeLessThan(contents.indexOf("toc-title"));
-    expect(contents.indexOf("toc-title")).toBeLessThan(contents.indexOf("toc-dots"));
-    expect(contents.indexOf("toc-dots")).toBeLessThan(contents.lastIndexOf("{row.folio}"));
-    expect(contents).toMatch(/stance === "inconclusive" \? "toc-stance quiet" : "toc-stance"/);
+    const front = read.slice(read.indexOf("function FrontPage"), read.indexOf("function pieceBlocks"));
+    const inside = front.slice(front.indexOf('className="inside"'));
+    // The front page's "In this issue": headline, then stance (icon + word), then the page.
+    expect(inside).toContain("<Stance stance={page.contents.rows[at + 1]?.stance} />");
+    expect(inside.indexOf("sheet.headline")).toBeLessThan(inside.indexOf("<Stance"));
+    expect(inside.indexOf("<Stance")).toBeLessThan(inside.indexOf('className="page-no"'));
+    // Absent rows are said in words, without a page number.
+    expect(front).toContain("page.contents.rows.filter((row) => row.absent)");
+    expect(inside).toContain('<p className="absent">{row.title}</p>');
     const css = readFileSync("src/styles.css", "utf8");
-    expect(css).toMatch(/\.toc-absent \{[\s\S]*font-family:\s*var\(--font-sans\)[\s\S]*color:\s*var\(--muted\)/);
-    expect(css).toMatch(/\.toc-title \{[\s\S]*font-family:\s*var\(--font-serif\)/);
-    expect(css).toMatch(/\.toc-stance \{[\s\S]*font-family:\s*var\(--font-sans\)[\s\S]*color:\s*var\(--muted\)/);
-    expect(css).toMatch(/\.toc-stance\.quiet \{[\s\S]*color-mix\(in srgb, var\(--ink\) 42%/);
-    const stanceBlocks = [...css.matchAll(/\.toc-stance[^{]*\{[^}]+\}/g)].map((match) => match[0]);
-    expect(stanceBlocks.length).toBeGreaterThanOrEqual(2);
-    for (const block of stanceBlocks) {
-      expect(block).toMatch(/var\(--ink\)|var\(--paper\)|var\(--muted\)/);
-      expect(block).not.toMatch(/#c00|#e00|#f00|red|crimson|tomato|salmon|orange|#[0-9a-f]{3,8}/i);
-    }
+    expect(css).toMatch(/\.inside \.absent \{[\s\S]*color:\s*var\(--muted\)/);
 
     const originalOnly = composeIssue({
       id: "issue-original-lock",
@@ -847,16 +831,17 @@ describe("Designer UI lock", () => {
     expect(originalOnly.contents.rows.some((row) => row.absent)).toBe(false);
   });
 
-  it("puts piece stance in the colophon only, and Print uses the same plan", () => {
+  it("puts piece stance under the byline as an icon and a word, and Print uses the same plan", () => {
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
     const pieceSheet = read.slice(read.indexOf("function PieceSheet"), read.indexOf("function SheetPhoto"));
-    expect(pieceSheet).toMatch(/sheet\.colophon \? <p className="colophon">\{sheet\.colophon\}<\/p> : null/);
-    expect(pieceSheet).not.toMatch(/stanceCopy|sheet\.stance|row\.stance/);
-    expect(pieceSheet).not.toMatch(/className="stance"|Could not place|A contrasting angle|AI labeled/);
-    expect(pieceSheet).toMatch(/<h2>\{sheet\.headline\}<\/h2>/);
+    expect(pieceSheet).toContain('sheet.sourceLine ? <p className="byline">{sheet.sourceLine}</p> : null');
+    expect(pieceSheet).toContain("<Stance stance={stance} />");
+    expect(pieceSheet).not.toMatch(/sheet\.stance|AI labeled/);
+    expect(pieceSheet).toContain("<h1>{sheet.headline}</h1>");
+    // Stance comes from the contents rows; the sheet itself never carries it.
+    expect(read).toContain("page.contents.rows[current.index]?.stance");
     const css = readFileSync("src/styles.css", "utf8");
-    expect(css).toMatch(/\.colophon \{[\s\S]*font-family:\s*var\(--font-sans\)[\s\S]*color:\s*var\(--muted\)/);
-    expect(css).toMatch(/\.piece-header h2 \{[\s\S]*font-family:\s*var\(--font-serif\)/);
+    expect(css).toMatch(/\.byline \{[\s\S]*color:\s*var\(--muted\)/);
     expect(
       pieceColophon(
         piece({
@@ -903,23 +888,22 @@ describe("Desk, colophon, and Select stay free", () => {
     const keep = readFileSync("src/routes/index.tsx", "utf8");
     const related = keep.slice(keep.indexOf("function RelatedItem"));
     expect(related.indexOf("row.title")).toBeLessThan(related.indexOf("row.stance"));
-    expect(related).toMatch(/stance === "inconclusive" \? "stance quiet" : "stance"/);
-    expect(related).toMatch(/stanceCopy\(row\.stance\)/);
-    expect(related).toMatch(/className="include"/);
-    expect(related).not.toMatch(/disabled=\{page\.stance/);
+    expect(related).toContain("stanceCopy(row.stance)");
+    expect(related).toContain('<input type="checkbox" checked={on}');
+    expect(related).not.toContain("disabled={page.stance");
     expect(related).not.toMatch(/stance === "inconclusive"[\s\S]{0,80}disabled/);
-    expect(keep).toMatch(/railAbsentCopy\("comparable"\)/);
-    expect(keep).toMatch(/railAbsentCopy\("contrarian"\)/);
-    expect(keep).toMatch(/slotState\(pages, "comparable"\)/);
-    expect(keep).not.toMatch(/href=\{page\.url\}/);
+    expect(keep).toContain('railAbsentCopy("comparable")');
+    expect(keep).toContain('railAbsentCopy("contrarian")');
+    expect(keep).toContain('slotState(pages, "comparable")');
+    expect(keep).not.toContain("href={page.url}");
   });
 
-  it("puts related stance in the piece colophon and contents absent rows on Read and Print", () => {
+  it("puts related stance under the byline and contents absent rows on Read and Print", () => {
     const read = readFileSync("src/routes/read.$id.tsx", "utf8");
     expect(read).toMatch(/row\.absent/);
-    expect(read).toMatch(/toc-absent/);
-    expect(read).toMatch(/pieceSheetIndex\(rowIndex\)/);
-    expect(read).toMatch(/sheet\.colophon \? <p className="colophon">\{sheet\.colophon\}<\/p> : null/);
+    expect(read).toContain('className="absent"');
+    expect(read).toContain("pieceSheetIndex(pieceIndex, { front })");
+    expect(read).toContain('sheet.sourceLine ? <p className="byline">');
     expect(
       pieceColophon(
         piece({

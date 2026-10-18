@@ -1,0 +1,972 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T22:53:01.690Z",
+  "title": "Design System: Quire",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(24.4% 0.010 88)",
+        "tonalRamp": [
+          "#0d0b07",
+          "#26241f",
+          "#42403a",
+          "#605d58",
+          "#82807a",
+          "#a7a49e",
+          "#cdcac4",
+          "#f1eee7"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink 2",
+        "canonical": "oklch(34.9% 0.014 89)",
+        "tonalRamp": [
+          "#0d0b05",
+          "#27241c",
+          "#434037",
+          "#615d55",
+          "#838077",
+          "#a8a49b",
+          "#cecac0",
+          "#f2eee4"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "oklch(45.8% 0.020 88)",
+        "tonalRamp": [
+          "#0f0b03",
+          "#282419",
+          "#443f34",
+          "#625d51",
+          "#858073",
+          "#aaa497",
+          "#d0cabc",
+          "#f4eee0"
+        ]
+      },
+      "newsprint": {
+        "role": "neutral",
+        "displayName": "Newsprint",
+        "canonical": "oklch(96.0% 0.026 94)",
+        "tonalRamp": [
+          "#0f0b01",
+          "#282416",
+          "#444030",
+          "#625e4d",
+          "#85806f",
+          "#a9a593",
+          "#d0cbb8",
+          "#f4efdc"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Sheet",
+        "canonical": "oklch(99.0% 0.016 95)",
+        "tonalRamp": [
+          "#0d0b04",
+          "#26241b",
+          "#424036",
+          "#605e54",
+          "#838076",
+          "#a7a59a",
+          "#cecbbf",
+          "#f2efe3"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "oklch(82.6% 0.039 92)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2b230c",
+          "#473f27",
+          "#655d44",
+          "#888066",
+          "#ada489",
+          "#d3caae",
+          "#f8eed1"
+        ]
+      },
+      "rule-2": {
+        "role": "neutral",
+        "displayName": "Rule 2",
+        "canonical": "oklch(89.4% 0.034 92)",
+        "tonalRamp": [
+          "#100b00",
+          "#2a2410",
+          "#463f2b",
+          "#645d48",
+          "#878069",
+          "#aca48d",
+          "#d2cab2",
+          "#f6eed5"
+        ]
+      },
+      "mat": {
+        "role": "neutral",
+        "displayName": "Mat",
+        "canonical": "oklch(91.6% 0.033 91)",
+        "tonalRamp": [
+          "#100b00",
+          "#2a2411",
+          "#463f2c",
+          "#645d48",
+          "#87806a",
+          "#aca48e",
+          "#d2cab3",
+          "#f6eed6"
+        ]
+      },
+      "marigold": {
+        "role": "primary",
+        "displayName": "Marigold",
+        "canonical": "oklch(81.1% 0.166 84)",
+        "tonalRamp": [
+          "#110a00",
+          "#2f2201",
+          "#523c00",
+          "#775802",
+          "#a17906",
+          "#ce9c0b",
+          "#fcc022",
+          "#ffedc8"
+        ]
+      },
+      "marigold-soft": {
+        "role": "primary",
+        "displayName": "Marigold Soft",
+        "canonical": "oklch(93.7% 0.076 93)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2301",
+          "#4d3e02",
+          "#6c5d26",
+          "#8f7f49",
+          "#b4a46d",
+          "#dbca91",
+          "#ffeeb6"
+        ]
+      },
+      "on-marigold": {
+        "role": "primary",
+        "displayName": "On Marigold",
+        "canonical": "oklch(24.4% 0.010 88)",
+        "tonalRamp": [
+          "#0d0b07",
+          "#26241f",
+          "#42403a",
+          "#605d58",
+          "#82807a",
+          "#a7a49e",
+          "#cdcac4",
+          "#f1eee7"
+        ]
+      },
+      "press-blue": {
+        "role": "secondary",
+        "displayName": "Press Blue",
+        "canonical": "oklch(43.1% 0.121 256)",
+        "tonalRamp": [
+          "#000a20",
+          "#00224f",
+          "#083d7e",
+          "#2b5da0",
+          "#4e81c7",
+          "#72a6f0",
+          "#aacdfe",
+          "#e5effe"
+        ]
+      },
+      "press-blue-hover": {
+        "role": "secondary",
+        "displayName": "Press Blue Hover",
+        "canonical": "oklch(34.1% 0.098 257)",
+        "tonalRamp": [
+          "#000a21",
+          "#01224f",
+          "#1a3f73",
+          "#385e94",
+          "#5a81bb",
+          "#7da6e2",
+          "#abcdfe",
+          "#e5effe"
+        ]
+      },
+      "cream-paper": {
+        "role": "neutral",
+        "displayName": "Cream tint: paper",
+        "canonical": "oklch(97.3% 0.018 89)",
+        "tonalRamp": [
+          "#0e0b04",
+          "#27241a",
+          "#433f35",
+          "#625d52",
+          "#848074",
+          "#a9a498",
+          "#cfcabe",
+          "#f3eee1"
+        ],
+        "tint": "cream"
+      },
+      "cream-sheet": {
+        "role": "neutral",
+        "displayName": "Cream tint: sheet",
+        "canonical": "oklch(99.4% 0.008 91)",
+        "tonalRamp": [
+          "#0c0b07",
+          "#252420",
+          "#41403b",
+          "#5f5d58",
+          "#82807b",
+          "#a6a49f",
+          "#cccac5",
+          "#f0eee8"
+        ],
+        "tint": "cream"
+      },
+      "cream-mat": {
+        "role": "neutral",
+        "displayName": "Cream tint: mat",
+        "canonical": "oklch(93.8% 0.025 89)",
+        "tonalRamp": [
+          "#0f0b02",
+          "#292416",
+          "#453f31",
+          "#635d4e",
+          "#868070",
+          "#aba493",
+          "#d1cab9",
+          "#f5eedc"
+        ],
+        "tint": "cream"
+      },
+      "cream-rule": {
+        "role": "neutral",
+        "displayName": "Cream tint: rule",
+        "canonical": "oklch(85.6% 0.033 89)",
+        "tonalRamp": [
+          "#100a00",
+          "#2a2311",
+          "#473f2c",
+          "#655d49",
+          "#88806a",
+          "#ada48e",
+          "#d3cab3",
+          "#f7eed6"
+        ],
+        "tint": "cream"
+      },
+      "cream-rule-2": {
+        "role": "neutral",
+        "displayName": "Cream tint: rule 2",
+        "canonical": "oklch(92.3% 0.025 89)",
+        "tonalRamp": [
+          "#0f0b02",
+          "#292416",
+          "#453f31",
+          "#635d4e",
+          "#868070",
+          "#aba493",
+          "#d1cab8",
+          "#f5eedc"
+        ],
+        "tint": "cream"
+      },
+      "yellow-paper": {
+        "role": "neutral",
+        "displayName": "Yellow tint: paper",
+        "canonical": "oklch(95.2% 0.061 96)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2401",
+          "#493f16",
+          "#685e34",
+          "#8b8056",
+          "#b0a579",
+          "#d6cb9e",
+          "#faefc1"
+        ],
+        "tint": "yellow"
+      },
+      "yellow-sheet": {
+        "role": "neutral",
+        "displayName": "Yellow tint: sheet",
+        "canonical": "oklch(97.7% 0.037 95)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#29240e",
+          "#464029",
+          "#645e46",
+          "#878067",
+          "#aba58b",
+          "#d2cbb0",
+          "#f6efd3"
+        ],
+        "tint": "yellow"
+      },
+      "yellow-mat": {
+        "role": "neutral",
+        "displayName": "Yellow tint: mat",
+        "canonical": "oklch(91.1% 0.079 95)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2301",
+          "#4c3f02",
+          "#6b5d23",
+          "#8e8047",
+          "#b3a56b",
+          "#dacb90",
+          "#feefb3"
+        ],
+        "tint": "yellow"
+      },
+      "yellow-rule": {
+        "role": "neutral",
+        "displayName": "Yellow tint: rule",
+        "canonical": "oklch(82.9% 0.094 95)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2401",
+          "#4c3f00",
+          "#6e5d0c",
+          "#918038",
+          "#b6a45d",
+          "#ddcb83",
+          "#ffefb0"
+        ],
+        "tint": "yellow"
+      },
+      "yellow-rule-2": {
+        "role": "neutral",
+        "displayName": "Yellow tint: rule 2",
+        "canonical": "oklch(91.1% 0.069 95)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2301",
+          "#4b3f0c",
+          "#695d2d",
+          "#8c8050",
+          "#b1a573",
+          "#d8cb98",
+          "#fcefbb"
+        ],
+        "tint": "yellow"
+      },
+      "yellow-marigold-soft": {
+        "role": "primary",
+        "displayName": "Yellow tint: marigold soft",
+        "canonical": "oklch(89.7% 0.110 93)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2301",
+          "#4d3e00",
+          "#705c02",
+          "#967e24",
+          "#bba34d",
+          "#e2c974",
+          "#ffeeb7"
+        ],
+        "tint": "yellow"
+      },
+      "blue-paper": {
+        "role": "neutral",
+        "displayName": "Blue tint: paper",
+        "canonical": "oklch(94.1% 0.015 241)",
+        "tonalRamp": [
+          "#060c11",
+          "#1e252b",
+          "#394147",
+          "#565f66",
+          "#798289",
+          "#9da6ad",
+          "#c2ccd4",
+          "#e6f0f8"
+        ],
+        "tint": "blue"
+      },
+      "blue-sheet": {
+        "role": "neutral",
+        "displayName": "Blue tint: sheet",
+        "canonical": "oklch(97.6% 0.008 241)",
+        "tonalRamp": [
+          "#080c0e",
+          "#212527",
+          "#3c4043",
+          "#5a5e62",
+          "#7c8184",
+          "#a1a5a9",
+          "#c6cbcf",
+          "#eaeff3"
+        ],
+        "tint": "blue"
+      },
+      "blue-mat": {
+        "role": "neutral",
+        "displayName": "Blue tint: mat",
+        "canonical": "oklch(90.0% 0.021 243)",
+        "tonalRamp": [
+          "#040c13",
+          "#1b252d",
+          "#37414a",
+          "#545f69",
+          "#76828c",
+          "#9aa6b1",
+          "#c0ccd7",
+          "#e3f0fc"
+        ],
+        "tint": "blue"
+      },
+      "blue-rule": {
+        "role": "neutral",
+        "displayName": "Blue tint: rule",
+        "canonical": "oklch(81.8% 0.030 244)",
+        "tonalRamp": [
+          "#020c17",
+          "#172632",
+          "#33424f",
+          "#50606e",
+          "#728391",
+          "#96a7b7",
+          "#bbcddd",
+          "#e2f1fe"
+        ],
+        "tint": "blue"
+      },
+      "blue-rule-2": {
+        "role": "neutral",
+        "displayName": "Blue tint: rule 2",
+        "canonical": "oklch(90.0% 0.021 243)",
+        "tonalRamp": [
+          "#040c13",
+          "#1b252d",
+          "#37414a",
+          "#545f69",
+          "#76828c",
+          "#9aa6b1",
+          "#c0ccd7",
+          "#e3f0fc"
+        ],
+        "tint": "blue"
+      },
+      "blue-marigold-soft": {
+        "role": "primary",
+        "displayName": "Blue tint: marigold soft",
+        "canonical": "oklch(92.8% 0.083 94)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2c2301",
+          "#4d3e02",
+          "#6d5c1f",
+          "#907f43",
+          "#b5a467",
+          "#dcca8c",
+          "#ffeeb6"
+        ],
+        "tint": "blue"
+      },
+      "grey-paper": {
+        "role": "neutral",
+        "displayName": "Grey tint: paper",
+        "canonical": "oklch(94.2% 0.005 106)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242421",
+          "#40403d",
+          "#5e5e5a",
+          "#80807d",
+          "#a5a5a1",
+          "#cbcbc7",
+          "#efefeb"
+        ],
+        "tint": "grey"
+      },
+      "grey-sheet": {
+        "role": "neutral",
+        "displayName": "Grey tint: sheet",
+        "canonical": "oklch(97.8% 0.004 106)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242422",
+          "#40403d",
+          "#5e5e5b",
+          "#80807e",
+          "#a5a5a2",
+          "#cbcbc8",
+          "#efefec"
+        ],
+        "tint": "grey"
+      },
+      "grey-mat": {
+        "role": "neutral",
+        "displayName": "Grey tint: mat",
+        "canonical": "oklch(89.7% 0.008 98)",
+        "tonalRamp": [
+          "#0c0b08",
+          "#252420",
+          "#41403b",
+          "#5f5e59",
+          "#81807b",
+          "#a6a59f",
+          "#cccbc5",
+          "#f0efe9"
+        ],
+        "tint": "grey"
+      },
+      "grey-rule": {
+        "role": "neutral",
+        "displayName": "Grey tint: rule",
+        "canonical": "oklch(81.6% 0.010 100)",
+        "tonalRamp": [
+          "#0c0b07",
+          "#25241f",
+          "#41403a",
+          "#5f5e58",
+          "#81807a",
+          "#a6a59e",
+          "#cccbc4",
+          "#f0efe7"
+        ],
+        "tint": "grey"
+      },
+      "grey-rule-2": {
+        "role": "neutral",
+        "displayName": "Grey tint: rule 2",
+        "canonical": "oklch(89.7% 0.008 98)",
+        "tonalRamp": [
+          "#0c0b08",
+          "#252420",
+          "#41403b",
+          "#5f5e59",
+          "#81807b",
+          "#a6a59f",
+          "#cccbc5",
+          "#f0efe9"
+        ],
+        "tint": "grey"
+      },
+      "night-paper": {
+        "role": "neutral",
+        "displayName": "Night tint: paper",
+        "canonical": "oklch(21.7% 0.008 95)",
+        "tonalRamp": [
+          "#0c0b08",
+          "#252420",
+          "#41403b",
+          "#5f5e59",
+          "#81807b",
+          "#a6a59f",
+          "#cccac5",
+          "#f0eee9"
+        ],
+        "tint": "night"
+      },
+      "night-sheet": {
+        "role": "neutral",
+        "displayName": "Night tint: sheet",
+        "canonical": "oklch(25.5% 0.009 97)",
+        "tonalRamp": [
+          "#0c0b07",
+          "#25241f",
+          "#41403a",
+          "#5f5e58",
+          "#81807a",
+          "#a6a59e",
+          "#cccbc4",
+          "#f0efe8"
+        ],
+        "tint": "night"
+      },
+      "night-mat": {
+        "role": "neutral",
+        "displayName": "Night tint: mat",
+        "canonical": "oklch(28.5% 0.011 91)",
+        "tonalRamp": [
+          "#0d0b06",
+          "#26241e",
+          "#424039",
+          "#605d57",
+          "#828079",
+          "#a7a49d",
+          "#cdcac3",
+          "#f1eee6"
+        ],
+        "tint": "night"
+      },
+      "night-ink": {
+        "role": "neutral",
+        "displayName": "Night tint: ink",
+        "canonical": "oklch(92.4% 0.031 92)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#292412",
+          "#45402d",
+          "#645d4a",
+          "#87806b",
+          "#aba58f",
+          "#d1cab4",
+          "#f6eed7"
+        ],
+        "tint": "night"
+      },
+      "night-ink-2": {
+        "role": "neutral",
+        "displayName": "Night tint: ink 2",
+        "canonical": "oklch(85.4% 0.031 92)",
+        "tonalRamp": [
+          "#100b00",
+          "#292412",
+          "#453f2d",
+          "#645d4a",
+          "#87806c",
+          "#aba48f",
+          "#d1cab4",
+          "#f6eed8"
+        ],
+        "tint": "night"
+      },
+      "night-muted": {
+        "role": "neutral",
+        "displayName": "Night tint: muted",
+        "canonical": "oklch(73.9% 0.032 90)",
+        "tonalRamp": [
+          "#100a00",
+          "#2a2311",
+          "#463f2c",
+          "#645d49",
+          "#87806b",
+          "#aca48e",
+          "#d2cab3",
+          "#f7eed7"
+        ],
+        "tint": "night"
+      },
+      "night-rule": {
+        "role": "neutral",
+        "displayName": "Night tint: rule",
+        "canonical": "oklch(39.5% 0.019 90)",
+        "tonalRamp": [
+          "#0e0b04",
+          "#27241a",
+          "#433f35",
+          "#625d52",
+          "#848074",
+          "#a9a498",
+          "#cfcabd",
+          "#f3eee1"
+        ],
+        "tint": "night"
+      },
+      "night-rule-2": {
+        "role": "neutral",
+        "displayName": "Night tint: rule 2",
+        "canonical": "oklch(31.6% 0.014 95)",
+        "tonalRamp": [
+          "#0d0b05",
+          "#26241c",
+          "#424037",
+          "#605e55",
+          "#838077",
+          "#a7a59b",
+          "#cdcbc1",
+          "#f1efe4"
+        ],
+        "tint": "night"
+      },
+      "night-marigold-soft": {
+        "role": "primary",
+        "displayName": "Night tint: marigold soft",
+        "canonical": "oklch(36.4% 0.062 92)",
+        "tonalRamp": [
+          "#100b00",
+          "#2d2301",
+          "#4c3e14",
+          "#6a5d33",
+          "#8d7f55",
+          "#b2a478",
+          "#d9ca9d",
+          "#fdeec0"
+        ],
+        "tint": "night"
+      },
+      "night-link": {
+        "role": "secondary",
+        "displayName": "Night tint: link",
+        "canonical": "oklch(82.0% 0.070 258)",
+        "tonalRamp": [
+          "#000a22",
+          "#0d2345",
+          "#284064",
+          "#455e85",
+          "#6781aa",
+          "#8aa6d1",
+          "#afccf9",
+          "#e5efff"
+        ],
+        "tint": "night"
+      },
+      "night-link-hover": {
+        "role": "secondary",
+        "displayName": "Night tint: link hover",
+        "canonical": "oklch(90.2% 0.040 258)",
+        "tonalRamp": [
+          "#030b1c",
+          "#182437",
+          "#334055",
+          "#505e75",
+          "#728199",
+          "#96a6be",
+          "#bbcce5",
+          "#e6effe"
+        ],
+        "tint": "night"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Front-page lead headline only. 800, 34 to 48px fluid, 1.15, max 22ch."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Article headline on each piece page; sign-in title."
+      },
+      "title": {
+        "displayName": "Subhead",
+        "purpose": "Section titles, In this issue headlines, article subheads (2em above, 0.6em below), pull quotes (700), Keep label; standfirst at 400 / 1.4 in ink-2. Largest text size lifts it to 1.75rem."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Reading text, one ragged-right column of 64ch or less, no hyphenation, word spacing 0.08em. Reader sizes 17/19/22/25px via --fs-body; first paragraph x1.08. Wide spacing: 0.12em / 0.16em / line 2 / paragraphs 2em."
+      },
+      "label": {
+        "displayName": "Small",
+        "purpose": "Bylines, captions, buttons, chips, band, dateline, ears, folios, meta. 400 or 700, 16px. The floor: nothing smaller."
+      },
+      "nameplate": {
+        "displayName": "Nameplate",
+        "purpose": "Grenze Gotisch SemiBold as an outlined SVG path in currentColor (src/lib/nameplate.ts). The only blackletter; min 24px high; 30px app bar and mini front, 48-72px Desk, 60-88px front masthead, 96px sign-in."
+      }
+    },
+    "shadows": [
+      {
+        "name": "focus-halo",
+        "value": "outline: 3px solid var(--focus); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold)",
+        "purpose": "Every :focus-visible. A flat marigold ring, not elevation. --focus is ink, marigold in night."
+      },
+      {
+        "name": "current-bar",
+        "value": "inset 0 -5px 0 var(--marigold)",
+        "purpose": "Current Desk nav item and selected settings chip. A flat fill bar, not elevation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "page-turn",
+        "value": "opacity 220ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Sheet fades out, next page lands at the top (or the ribbon's paragraph), fades in. No flip. Instant under prefers-reduced-motion: reduce."
+      },
+      {
+        "name": "disclosure",
+        "value": "transform 160ms ease-out",
+        "purpose": "More on this topic chevron rotates 90 degrees when open."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow",
+        "value": "559px",
+        "purpose": "Desk nav short labels; Keep row and bind bar stack; card actions become a grid."
+      },
+      {
+        "name": "phone",
+        "value": "719px",
+        "purpose": "Gutter 16px; masthead stacks, ears become one inline line; app bar drops where and Print; turn bar shows only Previous/Next."
+      },
+      {
+        "name": "tablet",
+        "value": "899px",
+        "purpose": "Skyline, lead grid, In this issue and clipping cards collapse to one column."
+      }
+    ],
+    "rules": {
+      "oxford": "hr: height 7px; two linear-gradient bands of --ink, 4px top and 1px bottom (.flip reverses). Print: 2.4pt / 2pt gap / 0.6pt.",
+      "endMark": "0.6em square, --marigold fill, 1px --ink outline, after the last word of each piece.",
+      "ribbon": "assets/ribbon.svg, V-notched strip. 14x38 in the ribbon note; 16x44 hanging 36px left of the stopped paragraph (10x30 at 14px on phones)."
+    },
+    "print": {
+      "engine": "pdf-lib (src/lib/print-compose.ts)",
+      "paper": "A4 or Letter, white",
+      "margin": "56pt",
+      "body": "Atkinson Hyperlegible Next Regular 12pt / 18pt leading, ragged right, one column",
+      "band": "22pt marigold strip, 10pt ExtraBold",
+      "note": "Quire's note 11pt in a marigold-soft box",
+      "folio": "0.6pt rule; Quire 9pt Bold left, Page n 9pt right, muted",
+      "colors": "ink, ink-2, muted, rule, marigold, marigold-soft (newsprint values)",
+      "extras": "front sheet with outlined nameplate + Oxford rule; end mark per piece; source QR code"
+    }
+  },
+  "components": [
+    {
+      "name": "Outlined Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Default action: Read the full piece, Keep. 2px ink frame, marigold-soft on hover.",
+      "html": "<button class=\"ds-btn\">Read the full piece <svg class=\"ds-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\"/></svg></button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 0.5em; min-height: 48px; padding: 0.55em 1.1em; border: 2px solid var(--ink, #22201b); border-radius: 2px; background: transparent; color: var(--ink, #22201b); font: 700 1rem/1.2 'Atkinson Hyperlegible Next', Verdana, sans-serif; letter-spacing: 0.02em; cursor: pointer; } .ds-btn:hover { background: var(--marigold-soft, #fbeab0); } .ds-btn:focus-visible { outline: 3px solid var(--focus, #22201b); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold, #f2b705); } .ds-icon { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Primary Button (reversed)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The page's one reversed element: Create issue, Sign in.",
+      "html": "<button class=\"ds-btn-primary\">Create issue</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; min-height: 48px; padding: 0.55em 1.1em; border: 2px solid var(--band-ink, #22201b); border-radius: 2px; background: var(--band-ink, #22201b); color: var(--band-text, #f7f2df); font: 700 1rem/1.2 'Atkinson Hyperlegible Next', Verdana, sans-serif; letter-spacing: 0.02em; cursor: pointer; } .ds-btn-primary:hover { background: var(--ink-2, #3d3a32); } .ds-btn-primary:focus-visible { outline: 3px solid var(--focus, #22201b); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold, #f2b705); } .ds-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Labelled field: 2px ink frame, 52px, body-size text, error as icon + bold sentence.",
+      "html": "<div class=\"ds-field\"><label for=\"ds-email\">Email</label><input id=\"ds-email\" type=\"email\" /></div>",
+      "css": ".ds-field { font-family: 'Atkinson Hyperlegible Next', Verdana, sans-serif; color: var(--ink, #22201b); } .ds-field label { display: block; font-size: 1rem; font-weight: 700; line-height: 1.4; margin-bottom: 6px; } .ds-field input { width: 100%; min-height: 52px; padding: 10px 14px; border: 2px solid var(--ink, #22201b); border-radius: 2px; background: var(--sheet, #fffcf0); font: 400 1.1875rem 'Atkinson Hyperlegible Next', Verdana, sans-serif; color: inherit; } .ds-field input:focus-visible { outline: 3px solid var(--focus, #22201b); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold, #f2b705); }"
+    },
+    {
+      "name": "Settings Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Reading settings radio: hairline frame; selected gets ink frame and a marigold inset bar.",
+      "html": "<label class=\"ds-chip\"><input type=\"radio\" name=\"ds-tint\" checked /><span><i class=\"ds-swatch\" style=\"background:#F7F2DF\"></i>Newsprint</span></label> <label class=\"ds-chip\"><input type=\"radio\" name=\"ds-tint\" /><span><i class=\"ds-swatch\" style=\"background:#FBF0C2\"></i>Yellow</span></label>",
+      "css": ".ds-chip { position: relative; display: inline-block; font-family: 'Atkinson Hyperlegible Next', Verdana, sans-serif; } .ds-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; } .ds-chip span { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 12px; border: 2px solid var(--line, #cfc6aa); border-radius: 2px; background: var(--paper, #f7f2df); color: var(--ink, #22201b); font-size: 1rem; line-height: 1.2; } .ds-chip input:checked + span { border-color: var(--ink, #22201b); box-shadow: inset 0 -5px 0 var(--marigold, #f2b705); font-weight: 700; } .ds-chip input:focus-visible + span { outline: 3px solid var(--focus, #22201b); outline-offset: 3px; } .ds-swatch { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(34,32,27,0.45); }"
+    },
+    {
+      "name": "Clipping Card",
+      "kind": "card",
+      "refersTo": "clipping-card",
+      "description": "Desk clipping on sheet; 6px marigold top band when in the issue; labelled tick.",
+      "html": "<article class=\"ds-clip is-in\"><div class=\"ds-thumb\"></div><h3><a href=\"#\">Library catalog</a></h3><p class=\"ds-meta\">en.wikipedia.org · 18 October 2026</p><div class=\"ds-actions\"><label class=\"ds-tick\"><input type=\"checkbox\" checked /> In the issue</label><a href=\"#\">Source</a><span class=\"ds-push\">Remove</span></div></article>",
+      "css": ".ds-clip { max-width: 28rem; background: var(--sheet, #fffcf0); border: 1px solid var(--line, #cfc6aa); border-radius: 2px; padding: 0 20px 14px; color: var(--ink, #22201b); font-family: 'Atkinson Hyperlegible Next', Verdana, sans-serif; letter-spacing: 0.02em; } .ds-clip::before { content: ''; display: block; height: 6px; margin: 0 -20px 18px; } .ds-clip.is-in::before { background: var(--marigold, #f2b705); } .ds-thumb { height: 8rem; margin-bottom: 14px; background: var(--mat, #ebe3cb); } .ds-clip h3 { margin: 0; font-size: 1.1875rem; font-weight: 800; line-height: 1.35; } .ds-clip h3 a { color: inherit; text-decoration: none; } .ds-clip h3 a:hover { text-decoration: underline; text-underline-offset: 0.2em; } .ds-meta { margin: 10px 0 0; font-size: 1rem; color: var(--muted, #5c574b); } .ds-actions { display: flex; align-items: center; gap: 4px 18px; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line-2, #e4dcc3); font-size: 1rem; font-weight: 700; } .ds-actions a { color: var(--link, #1d4f91); text-underline-offset: 0.28em; } .ds-push { margin-left: auto; } .ds-tick { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; } .ds-tick input { appearance: none; margin: 0; width: 28px; height: 28px; border: 2px solid var(--ink, #22201b); border-radius: 2px; background: var(--paper, #f7f2df); display: grid; place-items: center; } .ds-tick input:checked { background: var(--marigold, #f2b705); } .ds-tick input:checked::after { content: ''; width: 12px; height: 7px; border: solid #22201b; border-width: 0 0 3px 3px; transform: translateY(-2px) rotate(-45deg); } .ds-tick input:focus-visible { outline: 3px solid var(--focus, #22201b); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold, #f2b705); }"
+    },
+    {
+      "name": "Masthead",
+      "kind": "custom",
+      "refersTo": "dateline",
+      "description": "Front-page furniture: ears, centred blackletter nameplate, Oxford rule, reversed ink dateline bar.",
+      "html": "<header class=\"ds-mast\"><div class=\"ds-row\"><p class=\"ds-ear\"><strong>Issue No. 2</strong>Bound 18 October 2026</p><svg class=\"ds-plate\" viewBox=\"6.40 64.20 394.80 162.60\" role=\"img\" aria-label=\"Quire\"><path fill=\"currentColor\" d=\"M100.40 226.80L89.60 226.80L47.40 200.80L63.40 196.60L106.80 211L100.40 226.80ZM29.40 87.60L36 92.80Q35.20 99.40 34.30 106.60Q33.40 113.80 33 121.70Q32.60 129.60 32.60 139L32.60 139Q32.60 152.20 33.80 161.40Q35 170.60 38.10 176.50Q41.20 182.40 46.60 185.10Q52 187.80 60.20 187.80L60.20 187.80Q61.80 187.80 65.10 186.60Q68.40 185.40 71.40 183.90Q74.40 182.40 75.20 181.40L75.20 181.40Q77 177.80 78.10 172.30Q79.20 166.80 79.70 158.70Q80.20 150.60 80.20 139.60L80.20 139.60Q80.20 123 77.90 112.20Q75.60 101.40 70 96.10Q64.40 90.80 54.40 90.80L54.40 90.80Q53.40 90.80 52.70 90.80Q52 90.80 50.80 91L50.80 91L48.80 77.80Q50 77.40 51.40 77Q52.80 76.60 53.60 76.60L53.60 76.60Q71.20 76.60 82.90 82.70Q94.60 88.80 100.50 101.90Q106.40 115 106.40 136L106.40 136Q106.40 149.80 104.60 160.40Q102.80 171 100.20 177.80L100.20 177.80Q97.40 181.60 92.20 185.80Q87 190 81 193.70Q75 197.40 69.80 199.70Q64.60 202 62 202L62 202Q48.20 202 37.80 198.60Q27.40 195.20 20.50 188Q13.60 180.80 10 169.70Q6.40 158.60 6.40 143.20L6.40 143.20Q6.40 130.20 8.10 120Q9.80 109.80 12.40 103L12.40 103Q15 99.40 19.60 95.40Q24.20 91.40 29.40 87.60L29.40 87.60ZM48.80 77.80L48.80 77.80L54.80 77.80L54.80 178Q54.80 179.20 53.60 182.30Q52.40 185.40 50.20 189.40L50.20 189.40L44.20 189.40L44.20 93.20Q44.20 91.20 45.60 87Q47 82.80 48.80 77.80ZM155 202L155 202Q145.60 202 138.90 199.10Q132.20 196.20 128.70 189.20Q125.20 182.20 125.20 170L125.20 170L125.20 123.60L117.80 120.60L117.80 111.20Q117.80 111.20 121.00 110.60Q124.20 110 128.40 109.20Q132.60 108.40 136.10 107.90Q139.60 107.40 140.40 107.40L140.40 107.40Q141.20 107.40 143.20 108.90Q145.20 110.40 146.90 112.20Q148.60 114 148.60 114.80L148.60 114.80L148.60 169.80Q148.60 177.20 150.50 180.30Q152.40 183.40 154.70 184Q157 184.60 158.20 184.60L158.20 184.60Q159.20 184.60 161.90 183.50Q164.60 182.40 167.80 180.80Q171 179.20 173.60 178.20L173.60 178.20L173.60 123.60L166.20 120.60L166.20 111.20Q166.20 111.20 169.30 110.60Q172.40 110 176.70 109.20Q181 108.40 184.50 107.90Q188 107.40 189 107.40L189 107.40Q189.60 107.40 191.50 108.90Q193.40 110.40 195.20 112.20Q197 114 197 114.80L197 114.80L197 186L204.40 189L204.40 198.40Q204.40 198.40 201.20 199Q198 199.60 193.70 200.30Q189.40 201 185.70 201.50Q182 202 181.20 202L181.20 202Q180.60 202 178.90 200.50Q177.20 199 175.80 197.20Q174.40 195.40 174.40 194.80L174.40 194.80L174.40 188.40Q172 190.40 168.80 192.70Q165.60 195 162.70 197.10Q159.80 199.20 157.60 200.60Q155.40 202 155 202ZM231.20 202L231.20 202Q230.60 202 228.40 200.30Q226.20 198.60 224.30 196.80Q222.40 195 222.40 194.20L222.40 194.20L222.40 123L214.80 120.40L214.80 111Q214.80 111 217.90 110.40Q221.00 109.80 225.40 109.10Q229.80 108.40 233.40 107.90Q237.00 107.40 237.80 107.40L237.80 107.40Q238.60 107.40 240.50 109Q242.40 110.60 244.10 112.50Q245.80 114.40 245.80 115.40L245.80 115.40L245.80 186.60L253.20 188.80L253.20 198.20Q253.20 198.20 250.20 198.80Q247.20 199.40 243.10 200.10Q239.00 200.80 235.50 201.40Q232.00 202 231.20 202ZM219.60 80.20L220.40 75.60Q220.40 75 222.50 73.30Q224.60 71.60 227.30 69.40Q230.00 67.20 232.30 65.70Q234.60 64.20 235.00 64.20L235.00 64.20Q236.00 64.20 238.20 66Q240.40 67.80 242.80 70.40Q245.20 73 246.90 75.30Q248.60 77.60 248.40 78.60L248.40 78.60L247.40 83.20Q247.20 84 245.20 85.70Q243.20 87.40 240.60 89.40Q238.00 91.40 235.70 92.90Q233.40 94.40 232.80 94.40L232.80 94.40Q231.80 94.40 229.60 92.50Q227.40 90.60 225.10 88Q222.80 85.40 221.20 83.20Q219.60 81 219.60 80.20L219.60 80.20ZM279.20 202L279.20 202Q278.40 202 276.60 200.50Q274.80 199 273 197.20Q271.20 195.40 271.20 194.80L271.20 194.80L271.20 123L263.60 120.40L263.60 111Q263.60 111 266.70 110.40Q269.80 109.80 274 109.10Q278.20 108.40 281.70 107.90Q285.20 107.40 286 107.40L286 107.40Q286.80 107.40 288.70 109Q290.60 110.60 292.30 112.60Q294 114.60 294 115.20L294 115.20L293.80 123.40Q296.40 120.60 299 117.80Q301.60 115 303.90 112.60Q306.20 110.20 307.80 108.80Q309.40 107.40 310 107.40L310 107.40Q313 107.40 317.30 108.40Q321.60 109.40 324 110.20L324 110.20Q324.40 111.20 325 113.70Q325.60 116.20 325.60 117.80L325.60 117.80Q325.60 118.80 324.70 121.10Q323.80 123.40 322.50 126Q321.20 128.60 320.10 130.50Q319 132.40 318.60 132.60L318.60 132.60Q317.60 132.20 315.50 131.30Q313.40 130.40 311.10 129.70Q308.80 129 307 129L307 129Q306.40 129 305 129.50Q303.60 130 301.80 130.70Q300 131.40 298.20 132.30Q296.40 133.20 294.60 134.20L294.60 134.20L294.60 184.60L306.20 187.80L306.20 198Q306.20 198 303.80 198.40Q301.40 198.80 297.60 199.40Q293.80 200 289.80 200.60Q285.80 201.20 282.90 201.60Q280 202 279.20 202ZM354 156.60L354 156.60Q354 167.40 356.80 173.60Q359.60 179.80 363.40 182.30Q367.20 184.80 370.40 184.80L370.40 184.80Q371 184.80 374.20 184.70Q377.40 184.60 381.90 184.40Q386.40 184.20 390.80 184Q395.20 183.80 398.20 183.60L398.20 183.60L398.20 193.60Q395 194.80 390.10 196.20Q385.20 197.60 380.10 198.90Q375 200.20 371 201.10Q367 202 365.40 202L365.40 202Q355.60 202 347.50 197.20Q339.40 192.40 334.50 183Q329.60 173.60 329.60 159.60L329.60 159.60Q329.60 149.80 331.10 141.20Q332.60 132.60 334.60 128.40L334.60 128.40Q336.40 126 340.90 122.50Q345.40 119 350.80 115.50Q356.20 112 360.80 109.70Q365.40 107.40 367.60 107.40L367.60 107.40Q378.80 107.40 386.30 111.20Q393.80 115 397.50 125.30Q401.20 135.60 401.20 155L401.20 155L344 161L344 151.40L377.60 145.40Q377.80 134.20 375.50 127.60Q373.20 121 366.60 120.60L366.60 120.60Q365.20 120.40 363.30 120.40Q361.40 120.40 359.80 121.20L359.80 121.20Q357.20 122.60 355.60 132Q354 141.40 354 156.60Z\"/></svg><p class=\"ds-ear ds-r\"><strong>3 pieces</strong>About 82 minutes of reading</p></div><hr class=\"ds-oxford\" /><p class=\"ds-dateline\"><span>Sunday 18 October 2026</span><span>A personal press for one reader</span></p></header>",
+      "css": ".ds-mast { color: var(--ink, #22201b); font-family: 'Atkinson Hyperlegible Next', Verdana, sans-serif; letter-spacing: 0.02em; padding-top: 20px; } .ds-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items: center; } .ds-ear { margin: 0; width: 12rem; border: 1px solid var(--ink, #22201b); padding: 10px 12px; font-size: 1rem; line-height: 1.4; } .ds-ear strong { display: block; } .ds-r { justify-self: end; } .ds-plate { display: block; height: 72px; width: auto; color: var(--ink, #22201b); } .ds-oxford { border: 0; height: 7px; margin: 14px 0 0; background: linear-gradient(var(--ink, #22201b), var(--ink, #22201b)) top / 100% 4px no-repeat, linear-gradient(var(--ink, #22201b), var(--ink, #22201b)) bottom / 100% 1px no-repeat; } .ds-dateline { display: flex; justify-content: space-between; gap: 4px 24px; margin: 6px 0 0; padding: 8px 14px; background: var(--band-ink, #22201b); color: var(--band-text, #f7f2df); font-size: 1rem; font-weight: 700; line-height: 1.4; }"
+    },
+    {
+      "name": "Section Band",
+      "kind": "custom",
+      "refersTo": "section-band",
+      "description": "Each piece opens on a marigold band: Page n, From source, source link out.",
+      "html": "<p class=\"ds-band\"><span><strong>Page 2</strong> · From en.wikipedia.org</span><a href=\"#\">en.wikipedia.org</a></p>",
+      "css": ".ds-band { display: flex; justify-content: space-between; align-items: center; gap: 6px 20px; margin: 0; padding: 10px 16px; background: var(--marigold, #f2b705); color: var(--on-marigold, #22201b); font: 400 1rem/1.4 'Atkinson Hyperlegible Next', Verdana, sans-serif; letter-spacing: 0.02em; } .ds-band strong { font-weight: 800; } .ds-band a { color: var(--on-marigold, #22201b); font-weight: 700; text-decoration-thickness: 1px; text-underline-offset: 0.28em; } .ds-band a:hover { text-decoration-thickness: 2px; } .ds-band a:focus-visible { outline: 3px solid var(--focus, #22201b); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ribbon Note",
+      "kind": "custom",
+      "refersTo": "ribbon-note",
+      "description": "Signature: where you stopped, offered back with Go there.",
+      "html": "<div class=\"ds-resume\" role=\"status\"><span>Welcome back. You stopped at page 3, Typewriter.</span><button class=\"ds-go\">Go there</button></div>",
+      "css": ".ds-resume { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px 14px; max-width: 64ch; padding: 10px 14px; border: 1px solid var(--line, #cfc6aa); background: var(--sheet, #fffcf0); color: var(--ink, #22201b); font: 400 1rem/1.4 'Atkinson Hyperlegible Next', Verdana, sans-serif; } .ds-resume::before { content: ''; grid-row: span 2; width: 14px; height: 38px; background: var(--marigold, #f2b705); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%); } .ds-go { justify-self: start; min-height: 36px; padding: 0; border: 0; background: none; color: var(--link, #1d4f91); font: 700 1rem 'Atkinson Hyperlegible Next', Verdana, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.28em; cursor: pointer; } .ds-go:hover { color: var(--link-hover, #12376a); text-decoration-thickness: 2px; } .ds-go:focus-visible { outline: 3px solid var(--focus, #22201b); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold, #f2b705); }"
+    },
+    {
+      "name": "Page-turn Bar",
+      "kind": "nav",
+      "refersTo": "turn-bar",
+      "description": "Sticky bottom bar: Previous, folio, Next with next headline; 2px ink top rule.",
+      "html": "<nav class=\"ds-turn\" aria-label=\"Turn the page\"><button class=\"ds-prev\"><span>Previous</span><strong>Front page</strong></button><span class=\"ds-folio\">Page 2 of 4</span><button class=\"ds-next\"><span>Next</span><strong>Typewriter</strong></button></nav>",
+      "css": ".ds-turn { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; padding: 8px 32px; border-top: 2px solid var(--ink, #22201b); background: var(--paper, #f7f2df); color: var(--ink, #22201b); font: 400 1rem/1.35 'Atkinson Hyperlegible Next', Verdana, sans-serif; } .ds-turn button { display: flex; flex-direction: column; gap: 2px; min-height: 48px; justify-content: center; padding: 0; border: 0; background: none; text-align: left; color: inherit; font: inherit; cursor: pointer; } .ds-turn button span { color: var(--muted, #5c574b); } .ds-turn button strong { font-weight: 700; } .ds-turn button:hover strong { text-decoration: underline; text-underline-offset: 0.25em; } .ds-turn button:focus-visible { outline: 3px solid var(--focus, #22201b); outline-offset: 3px; box-shadow: 0 0 0 7px var(--marigold, #f2b705); } .ds-next { align-items: flex-end; text-align: right !important; } .ds-folio { font-weight: 700; text-align: center; white-space: nowrap; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Sunday Bundle",
+    "overview": "Each bound issue reads as a British Sunday paper made for one dyslexic reader. The front page shows what is inside at a glance; every other piece gets its own page, opening on a marigold section band, set in one calm ragged-right column. The newspaper is the frame; the reading is plain. The furniture is traditional: an outlined blackletter nameplate, Oxford rules (thick over thin), ears, an ink dateline bar, section bands, folios, an end mark. The reading text drops the tradition's habits and follows the BDA Dyslexia Style Guide instead: sans-serif, left-aligned, one column, no italics, no capital labels, off-white paper.\n\nDensity is calm. One family at five sizes, hairline rules instead of boxes, flat paper with no texture. The reader owns the paper. Six tints, four text sizes and two spacing settings are applied as data-* attributes on <html> before first paint, and every surface (the reading pages and the Desk) is built from the tint-swappable tokens. The signature interaction is the ribbon: the issue remembers where you stopped and offers to take you back.\n\nThe product refuses the read-later list and the dense justified broadsheet.",
+    "keyCharacteristics": [
+      "Flat newsprint paper. Ink rules, no shadows, 2px corners.",
+      "Marigold is only ever a fill: band, ribbon, ticks, current-tab bar, end mark, selection, focus halo.",
+      "One reversed (paper-on-ink) element per reading page marks what matters most.",
+      "One sans family, five sizes, nothing below 16px.",
+      "Every colour is a token that swaps per reader tint, including the mat behind photographs."
+    ],
+    "rules": [
+      {
+        "name": "The Fill-Only Marigold Rule",
+        "body": "Marigold is a fill, never text on paper and never the nameplate's colour. Anything set on marigold is ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Every-Colour-Is-A-Token Rule",
+        "body": "A new surface uses --paper, --sheet, --mat, --line, --line-2, --ink*, --muted, --link*, --band-*, never a literal hex, so all six tints and night work without extra code.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Status Colour Rule",
+        "body": "There is no red, green or pink anywhere. A problem is the drawn alert icon plus a bold sentence in ink. Waiting is the clock icon plus the step in words.",
+        "section": "colors"
+      },
+      {
+        "name": "The Five Sizes Rule",
+        "body": "Display, Headline, Subhead, Body, Small. That is the whole scale. The only derived size is the x1.08 opening paragraph.",
+        "section": "typography"
+      },
+      {
+        "name": "The Upright Rule",
+        "body": "No italics anywhere. em, i, cite and blockquote are set upright, and emphasis becomes weight 700, including the source's own italics.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Headlines and labels are sentence case with no negative tracking (headings track 0, word spacing 0.04em, text-wrap: balance). There are no capital-letter labels and no small caps.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Blackletter Rule",
+        "body": "The nameplate is the only blackletter, always the outlined path, never under 24px high (app bar 30px, mini front 30px, Desk masthead 48-72px, front masthead 60-88px, sign-in 96px).",
+        "section": "typography"
+      },
+      {
+        "name": "The Columns Drop, Type Never Shrinks Rule",
+        "body": "On phones every grid collapses to one column. Type sizes stay the same, and labels shorten instead.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Paper Rule",
+        "body": "No drop shadows, no texture, no grain, no gradients except the two-band Oxford rule. To lift something, step the paper (sheet) or reverse it (ink).",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Reversed Element Rule",
+        "body": "Each reading page has exactly one paper-on-ink element: the dateline bar on the front page, and the primary button where it is the page's main action (Create issue on the bind bar). Everything else is outlined or ruled.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do build every new surface from the tint tokens (--paper, --sheet, --mat, --line, --line-2, --ink, --muted, --link, --band-ink, --band-text) and check it in all six papers, Night included.",
+      "Do put photographs on --mat, whole (object-fit: contain), capped at 26rem on a page, 18rem in the front-page lead and 12rem on a card, and never inside running text.",
+      "Do keep reading text in one ragged-right column of 64ch or less, with paragraph gaps from --para.",
+      "Do underline every link (1px, 0.28em offset; 2px on hover) so the cue is never colour alone.",
+      "Do pair every icon with a word and every state with an icon plus a sentence.",
+      "Do keep targets at 44px minimum, and 48px for buttons and page turns.",
+      "Do mark rank by reversal (one ink element per page) and by Oxford rules, not by colour or size jumps.",
+      "Do fade the page turn at 220ms and drop it under reduced motion."
+    ],
+    "donts": [
+      "Don't set text in marigold on paper, colour the nameplate marigold, or use marigold as a large decorative ground beyond the band.",
+      "Don't use italics, capital-letter labels, eyebrows above headlines, justified text, hyphenation, drop caps or multi-column reading text.",
+      "Don't add a sixth type size or anything below 16px.",
+      "Don't use drop shadows, textures, grain or glassy effects. box-shadow is allowed only as the flat marigold focus halo or the inset current bar.",
+      "Don't use red, green or pink, for status or anything else.",
+      "Don't set any other text in blackletter, or put the nameplate on a photograph.",
+      "Don't crop source figures or invent standfirsts, ear facts or reading times. Show what the source and the issue actually hold.",
+      "Don't use the ribbon as decoration. It means \"you stopped here\"."
+    ]
+  }
+}

@@ -1,6 +1,9 @@
 /**
- * Server compositor for Print this issue. Same bound plan as Read.
- * A4 or letter. Embedded Source faces. Not a product named Press.
+ * Server compositor for Print this issue. Same bound plan as Read, set as
+ * the Sunday Bundle (docs/brand §10): a front page, the contents, then one
+ * piece per page, each opening on its marigold band. One column, ragged
+ * right, no italics, Atkinson Hyperlegible Next at 12 pt. A4 or letter.
+ * Not a product named Press.
  */
 
 import { readFileSync } from "node:fs";
@@ -8,32 +11,39 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import fontkitMod from "@pdf-lib/fontkit";
 import { PDFDocument, rgb, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
-import { stanceCopy } from "../copy";
+import { fromSource, motto, stanceCopy, takeLabel, wordsFetched } from "../copy";
 import type { BoundIssue } from "./bind";
 import { composeIssue, type PagePlan } from "./compose";
+import { hostnameOf } from "./kept";
+import { longDate, minutesCopy, piecesCopy, readingMinutes, shortDate } from "./edition";
+import { NAMEPLATE_PATH, NAMEPLATE_VIEWBOX } from "./nameplate";
 import { paperBox, printPlan, type PaperName, type PrintSheet } from "./print";
 import { qrMatrix } from "./qr";
 import { IMAGE_MAX_BYTES, readCapped, safeFetch } from "./safe-fetch";
 
-const PAPER = rgb(250 / 255, 247 / 255, 241 / 255);
-const INK = rgb(28 / 255, 24 / 255, 20 / 255);
-const BINDING = rgb(74 / 255, 92 / 255, 86 / 255);
-const MUTED = rgb(121 / 255, 118 / 255, 113 / 255);
-const QUIET = rgb(157 / 255, 153 / 255, 148 / 255);
-const RULE = rgb(214 / 255, 211 / 255, 206 / 255);
+// Paper is the paper: the page is left white, so a print never floods the sheet with tint.
+const INK = rgb(34 / 255, 32 / 255, 27 / 255);
+const INK_2 = rgb(61 / 255, 58 / 255, 50 / 255);
+const MUTED = rgb(92 / 255, 87 / 255, 75 / 255);
+const RULE = rgb(207 / 255, 198 / 255, 170 / 255);
+const MARIGOLD = rgb(242 / 255, 183 / 255, 5 / 255);
+const MARIGOLD_SOFT = rgb(251 / 255, 234 / 255, 176 / 255);
+const WHITE = rgb(1, 1, 1);
+
+const MARGIN = 56;
+const BODY = 12;
+const BODY_LEADING = 18;
 
 const FACES = {
-  sans: new URL("../../fonts/SourceSans3-Regular.ttf", import.meta.url),
-  sansMed: new URL("../../fonts/SourceSans3-Semibold.ttf", import.meta.url),
-  serif: new URL("../../fonts/SourceSerif4-Regular.ttf", import.meta.url),
-  serifIt: new URL("../../fonts/SourceSerif4-Italic.ttf", import.meta.url),
+  regular: new URL("../../fonts/AtkinsonHyperlegibleNext-Regular.ttf", import.meta.url),
+  bold: new URL("../../fonts/AtkinsonHyperlegibleNext-Bold.ttf", import.meta.url),
+  heavy: new URL("../../fonts/AtkinsonHyperlegibleNext-ExtraBold.ttf", import.meta.url),
 } as const;
 
 type Faces = {
-  sans: PDFFont;
-  sansMed: PDFFont;
-  serif: PDFFont;
-  serifIt: PDFFont;
+  regular: PDFFont;
+  bold: PDFFont;
+  heavy: PDFFont;
 };
 
 export async function composePrint(issue: BoundIssue, paper: PaperName = "a4"): Promise<Uint8Array> {
@@ -46,14 +56,14 @@ export async function composePrint(issue: BoundIssue, paper: PaperName = "a4"): 
 
   for (const sheet of plan.sheets) {
     if (sheet.kind === "cover") {
-      drawCover(book, sheet);
+      drawFront(book, sheet, page, issue);
       continue;
     }
     if (sheet.kind === "contents") {
       drawContents(book, sheet);
       continue;
     }
-    await drawPiece(book, sheet, page);
+    await drawPiece(book, sheet, page, issue);
   }
 
   return doc.save();
@@ -67,13 +77,12 @@ function resolveFontkit() {
 }
 
 async function embedFaces(doc: PDFDocument): Promise<Faces> {
-  const [sans, sansMed, serif, serifIt] = await Promise.all([
-    doc.embedFont(faceBytes(FACES.sans), { subset: true }),
-    doc.embedFont(faceBytes(FACES.sansMed), { subset: true }),
-    doc.embedFont(faceBytes(FACES.serif), { subset: true }),
-    doc.embedFont(faceBytes(FACES.serifIt), { subset: true }),
+  const [regular, bold, heavy] = await Promise.all([
+    doc.embedFont(faceBytes(FACES.regular), { subset: true }),
+    doc.embedFont(faceBytes(FACES.bold), { subset: true }),
+    doc.embedFont(faceBytes(FACES.heavy), { subset: true }),
   ]);
-  return { sans, sansMed, serif, serifIt };
+  return { regular, bold, heavy };
 }
 
 function faceBytes(face: URL) {
@@ -92,37 +101,32 @@ type Book = {
   y: number;
   left: number;
   width: number;
+  folio: string;
 };
 
 function openBook(doc: PDFDocument, faces: Faces, paper: PaperName): Book {
   const size = paperBox(paper);
-  const left = 54;
-  const book: Book = {
+  return {
     doc,
     faces,
     size,
     page: doc.addPage(size),
-    y: size[1] - 54,
-    left,
-    width: size[0] - 108,
+    y: size[1] - MARGIN,
+    left: MARGIN,
+    width: size[0] - MARGIN * 2,
+    folio: "",
   };
-  fillPaper(book.page, size);
-  return book;
 }
 
-function fillPaper(page: PDFPage, size: [number, number]) {
-  page.drawRectangle({ x: 0, y: 0, width: size[0], height: size[1], color: PAPER });
-}
-
-function freshPage(book: Book, folio?: string) {
+function freshPage(book: Book, folio = book.folio) {
   book.page = book.doc.addPage(book.size);
-  fillPaper(book.page, book.size);
-  book.y = book.size[1] - 54;
-  if (folio) drawRunning(book, folio);
+  book.folio = folio;
+  book.y = book.size[1] - MARGIN;
+  if (folio) drawFolio(book);
 }
 
-function need(book: Book, height: number, folio?: string) {
-  if (book.y - height < 54) freshPage(book, folio);
+function need(book: Book, height: number) {
+  if (book.y - height < MARGIN + 18) freshPage(book);
 }
 
 function wrap(font: PDFFont, text: string, size: number, width: number) {
@@ -156,6 +160,7 @@ function wrap(font: PDFFont, text: string, size: number, width: number) {
   return lines;
 }
 
+/** Left-aligned, ragged right. Returns where the last line ended, for an end mark. */
 function write(
   book: Book,
   text: string,
@@ -164,231 +169,287 @@ function write(
   leading: number,
   color = INK,
   width = book.width,
+  x = book.left,
 ) {
+  let end = { x, y: book.y };
   for (const line of wrap(font, text, size, width)) {
     need(book, leading);
-    book.page.drawText(line, {
-      x: book.left,
-      y: book.y - size,
-      size,
-      font,
-      color,
-    });
+    book.page.drawText(line, { x, y: book.y - size, size, font, color });
+    end = { x: x + font.widthOfTextAtSize(line, size), y: book.y - size };
     book.y -= leading;
   }
+  return end;
 }
 
-function rule(book: Book, color = RULE) {
-  need(book, 10);
-  book.page.drawRectangle({
-    x: book.left,
-    y: book.y,
-    width: 72,
-    height: 1.5,
-    color,
-  });
-  book.y -= 16;
+function fullRule(book: Book, thickness: number, color = INK) {
+  book.page.drawRectangle({ x: book.left, y: book.y - thickness, width: book.width, height: thickness, color });
+  book.y -= thickness;
 }
 
-function hairline(book: Book) {
-  need(book, 8);
-  book.page.drawRectangle({
-    x: book.left,
-    y: book.y,
-    width: book.width,
-    height: 1,
-    color: INK,
-  });
-  book.y -= 10;
+/** Thick over thin, as under a newspaper's nameplate. */
+function oxfordRule(book: Book) {
+  fullRule(book, 2.4);
+  book.y -= 2;
+  fullRule(book, 0.6);
 }
 
-function drawRunning(book: Book, folio: string) {
-  book.page.drawText("Quire", {
-    x: book.left,
-    y: book.size[1] - 40,
-    size: 8,
-    font: book.faces.sans,
-    color: MUTED,
-  });
-  const label = folio;
+function drawFolio(book: Book) {
+  const y = MARGIN - 24;
+  book.page.drawRectangle({ x: book.left, y: y + 14, width: book.width, height: 0.6, color: RULE });
+  book.page.drawText("Quire", { x: book.left, y, size: 9, font: book.faces.bold, color: MUTED });
+  const label = `Page ${Number(book.folio)}`;
   book.page.drawText(label, {
-    x: book.left + book.width - book.faces.sans.widthOfTextAtSize(label, 8),
-    y: book.size[1] - 40,
-    size: 8,
-    font: book.faces.sans,
+    x: book.left + book.width - book.faces.regular.widthOfTextAtSize(label, 9),
+    y,
+    size: 9,
+    font: book.faces.regular,
     color: MUTED,
   });
-  book.page.drawRectangle({
-    x: book.left,
-    y: book.size[1] - 48,
-    width: book.width,
-    height: 0.6,
-    color: RULE,
-  });
-  book.y = book.size[1] - 68;
 }
 
-function drawCover(book: Book, sheet: Extract<PrintSheet, { kind: "cover" }>) {
-  if (sheet.kicker) {
-    write(book, sheet.kicker.toUpperCase(), book.faces.sansMed, 9, 14, BINDING);
+function drawNameplate(book: Book, height: number) {
+  const [vx, vy, vw, vh] = NAMEPLATE_VIEWBOX.split(" ").map(Number);
+  const scale = height / vh;
+  const width = vw * scale;
+  // drawSvgPath maps SVG y-down onto the page from the given origin.
+  book.page.drawSvgPath(NAMEPLATE_PATH, {
+    x: book.left + (book.width - width) / 2 - vx * scale,
+    y: book.y + vy * scale,
+    scale,
+    color: INK,
+    borderWidth: 0,
+  });
+  book.y -= height;
+}
+
+function drawFront(book: Book, sheet: Extract<PrintSheet, { kind: "cover" }>, page: PagePlan, issue: BoundIssue) {
+  drawNameplate(book, 64);
+  book.y -= 10;
+  const ears = `${piecesCopy(page.sequence.length)} · ${minutesCopy(readingMinutes(page.sequence)).toLowerCase()}`;
+  const earsWidth = book.faces.regular.widthOfTextAtSize(ears, 10);
+  book.page.drawText(ears, {
+    x: book.left + (book.width - earsWidth) / 2,
+    y: book.y - 10,
+    size: 10,
+    font: book.faces.regular,
+    color: MUTED,
+  });
+  book.y -= 20;
+  oxfordRule(book);
+  book.y -= 4;
+  // The ink dateline bar: the page's one reversed element.
+  const bar = 20;
+  book.page.drawRectangle({ x: book.left, y: book.y - bar, width: book.width, height: bar, color: INK });
+  book.page.drawText(longDate(issue.createdAt), {
+    x: book.left + 8,
+    y: book.y - 14,
+    size: 10,
+    font: book.faces.bold,
+    color: WHITE,
+  });
+  const mottoWidth = book.faces.bold.widthOfTextAtSize(motto, 10);
+  book.page.drawText(motto, {
+    x: book.left + book.width - 8 - mottoWidth,
+    y: book.y - 14,
+    size: 10,
+    font: book.faces.bold,
+    color: WHITE,
+  });
+  book.y -= bar + 28;
+
+  write(book, sheet.title, book.faces.heavy, 30, 36);
+  const lead = page.sequence[0];
+  // The source's own cover line, set once as the standfirst (never a capital-letter kicker).
+  const standfirst = lead?.standfirst ?? sheet.kicker;
+  if (standfirst) {
+    book.y -= 4;
+    write(book, standfirst, book.faces.regular, 16, 22, INK_2);
   }
-  write(book, sheet.masthead, book.faces.serif, 42, 40);
-  rule(book, BINDING);
-  write(book, sheet.title, book.faces.serif, 28, 32);
-  if (sheet.lead) {
-    book.y -= 8;
-    write(book, sheet.lead.toUpperCase(), book.faces.sans, 9, 14, INK);
+  if (lead?.sourceLine) {
+    book.y -= 4;
+    write(book, lead.sourceLine, book.faces.regular, 10, 15, MUTED);
+  }
+  book.y -= 14;
+  for (const paragraph of (lead?.paragraphs ?? []).slice(0, 2)) {
+    write(book, paragraph, book.faces.regular, BODY, BODY_LEADING);
+    book.y -= 6;
   }
   if (sheet.meta) {
-    book.y -= 16;
-    write(book, sheet.meta.toUpperCase(), book.faces.sans, 8, 12, MUTED);
+    book.y -= 10;
+    write(book, `Bound ${shortDate(issue.createdAt)}`, book.faces.regular, 10, 15, MUTED);
   }
 }
 
 function drawContents(book: Book, sheet: Extract<PrintSheet, { kind: "contents" }>) {
   freshPage(book, sheet.folio);
-  write(book, sheet.kicker.toUpperCase(), book.faces.sansMed, 9, 14, BINDING);
-  write(book, sheet.title, book.faces.serif, 36, 40);
+  write(book, sheet.kicker, book.faces.heavy, 24, 30);
+  book.y -= 6;
+  fullRule(book, 1);
   book.y -= 8;
   for (const row of sheet.rows) {
-    need(book, 28, sheet.folio);
-    const label = !row.absent && row.stance ? stanceCopy(row.stance) : "";
-    const stanceWidth = label ? book.faces.sans.widthOfTextAtSize(label, 8) + 10 : 0;
-    if (label) {
-      book.page.drawText(label, {
-        x: book.left,
-        y: book.y - 13,
-        size: 8,
-        font: book.faces.sans,
-        color: row.stance === "inconclusive" ? QUIET : MUTED,
-      });
+    need(book, 40);
+    if (row.absent) {
+      write(book, row.title, book.faces.regular, 11, 16, MUTED);
+    } else {
+      const titleWidth = book.width - 60;
+      write(book, row.title, book.faces.bold, 13, 18, INK, titleWidth);
+      if (row.stance) {
+        write(book, stanceCopy(row.stance), book.faces.bold, 10, 15, row.stance === "inconclusive" ? MUTED : INK_2);
+      }
+      if (row.folio) {
+        const label = `Page ${Number(row.folio)}`;
+        book.page.drawText(label, {
+          x: book.left + book.width - book.faces.regular.widthOfTextAtSize(label, 10),
+          y: book.y + 4,
+          size: 10,
+          font: book.faces.regular,
+          color: MUTED,
+        });
+      }
     }
-    book.page.drawText(row.title, {
-      x: book.left + stanceWidth,
-      y: book.y - 13,
-      size: row.absent ? 11 : 13,
-      font: row.absent ? book.faces.sans : book.faces.serif,
-      color: row.absent ? MUTED : INK,
-    });
-    if (row.folio) {
-      book.page.drawText(row.folio, {
-        x: book.left + book.width - book.faces.sans.widthOfTextAtSize(row.folio, 9),
-        y: book.y - 12,
-        size: 9,
-        font: book.faces.sans,
-        color: MUTED,
-      });
-    }
-    book.page.drawRectangle({
-      x: book.left,
-      y: book.y - 20,
-      width: book.width,
-      height: 0.6,
-      color: RULE,
-    });
-    book.y -= 28;
-  }
-}
-
-async function drawPiece(book: Book, sheet: Extract<PrintSheet, { kind: "piece" }>, page: PagePlan) {
-  freshPage(book, sheet.folio);
-  const planned = page.sequence.find((item) => item.folio === sheet.folio);
-  const figure = planned?.figure;
-  const quote =
-    sheet.intent.composition === "quote-led" ? planned?.pullQuotes?.[0] : undefined;
-  if (quote) {
-    write(book, quote, book.faces.serifIt, 16, 22);
-    book.y -= 8;
-  }
-  if (sheet.intent.composition === "visual-opener" && figure) {
-    await drawFigure(book, figure.url, sheet.folio, figure.caption, figure.credit);
-  }
-  const headSize = sheet.intent.treatment === "feature" ? 30 : sheet.intent.treatment === "compact" ? 20 : 26;
-  write(book, sheet.headline, book.faces.serif, headSize, headSize + 4);
-  if (sheet.intent.composition !== "visual-opener" && figure) {
-    await drawFigure(book, figure.url, sheet.folio, figure.caption, figure.credit);
-  }
-  if (sheet.take) {
     book.y -= 6;
-    hairline(book);
-    write(book, sheet.take, book.faces.serifIt, 12, 18);
-    hairline(book);
+    book.page.drawRectangle({ x: book.left, y: book.y, width: book.width, height: 0.6, color: RULE });
+    book.y -= 10;
   }
-  const columns = sheet.intent.body_flow === "two" ? 2 : 1;
-  const gutter = 18;
-  const colWidth = columns === 2 ? (book.width - gutter) / 2 : book.width;
-  if (columns === 1) {
-    const blocks = planned?.blocks?.length
-      ? planned.blocks.filter((block) => !(quote && block.kind === "pullQuote" && block.text === quote))
-      : sheet.paragraphs.map((text) => ({ kind: "paragraph" as const, text }));
-    for (const block of blocks) {
-      book.y -= 4;
-      if (block.kind === "subhead") {
-        write(book, block.text, book.faces.serif, 13, 18);
-        continue;
-      }
-      if (block.kind === "pullQuote") {
-        write(book, block.text, book.faces.serifIt, 13, 18);
-        continue;
-      }
-      write(book, block.text, book.faces.serif, 11, 16);
-    }
-    closePiece(book, sheet, planned);
-    return;
-  }
-  const lines = sheet.paragraphs.flatMap((paragraph, index) => [
-    ...(index > 0 ? [""] : []),
-    ...wrap(book.faces.serif, paragraph, 11, colWidth),
-  ]);
-  const leading = 16;
-  let col = 0;
-  let y = book.y;
-  const top = book.y;
-  for (const line of lines) {
-    if (y - leading < 54) {
-      col += 1;
-      if (col >= 2) {
-        freshPage(book, sheet.folio);
-        col = 0;
-        y = book.y;
-      } else {
-        y = top;
-      }
-    }
-    if (line) {
-      book.page.drawText(line, {
-        x: book.left + col * (colWidth + gutter),
-        y: y - 11,
-        size: 11,
-        font: book.faces.serif,
-        color: INK,
-      });
-    }
-    y -= leading;
-  }
-  book.y = y;
-  closePiece(book, sheet, planned);
 }
 
-function closePiece(
+async function drawPiece(
   book: Book,
   sheet: Extract<PrintSheet, { kind: "piece" }>,
-  planned: PagePlan["sequence"][number] | undefined,
+  page: PagePlan,
+  issue: BoundIssue,
 ) {
-  if (sheet.intent.treatment === "screening" && planned?.videoUrl) {
-    drawQr(book, planned.videoUrl, sheet.folio);
+  freshPage(book, sheet.folio);
+  const at = page.sequence.findIndex((item) => item.folio === sheet.folio);
+  const planned = at >= 0 ? page.sequence[at] : undefined;
+  const stance = at >= 0 ? page.contents.rows[at]?.stance : undefined;
+  const host = planned ? hostnameOf(planned.url) : "";
+  const source = planned?.sourceLine?.split(" · ")[0] || host;
+
+  // The section band: the piece's own nameplate.
+  const band = 22;
+  book.page.drawRectangle({ x: book.left, y: book.y - band, width: book.width, height: band, color: MARIGOLD });
+  book.page.drawText(`Page ${Number(sheet.folio)}`, {
+    x: book.left + 8,
+    y: book.y - 15,
+    size: 10,
+    font: book.faces.heavy,
+    color: INK,
+  });
+  if (source) {
+    const from = fromSource(source);
+    book.page.drawText(from, {
+      x: book.left + 8 + book.faces.heavy.widthOfTextAtSize(`Page ${Number(sheet.folio)}`, 10) + 10,
+      y: book.y - 15,
+      size: 10,
+      font: book.faces.regular,
+      color: INK,
+    });
   }
-  if (planned?.colophon) {
-    book.y -= 18;
-    write(book, planned.colophon, book.faces.sans, 8, 12, MUTED);
+  book.y -= band + 26;
+
+  write(book, sheet.headline, book.faces.heavy, 22, 28);
+  if (planned?.standfirst) {
+    book.y -= 2;
+    write(book, planned.standfirst, book.faces.regular, 14, 20, INK_2);
+  }
+  if (planned?.sourceLine) {
+    book.y -= 2;
+    write(book, planned.sourceLine, book.faces.regular, 10, 15, MUTED);
+  }
+  if (stance) write(book, stanceCopy(stance), book.faces.bold, 10, 15, INK_2);
+  book.y -= 10;
+
+  if (planned?.figure) {
+    await drawFigure(book, planned.figure.url, planned.figure.caption, planned.figure.credit);
+  }
+  if (sheet.take) drawNote(book, sheet.take);
+
+  const blocks = planned?.blocks?.length
+    ? planned.blocks
+    : sheet.paragraphs.map((text) => ({ kind: "paragraph" as const, text }));
+  const lastParagraph = blocks.map((block) => block.kind).lastIndexOf("paragraph");
+  // One column at a reading measure, whatever the screen's treatment (BDA: avoid newspaper columns).
+  const measure = Math.min(book.width, 420);
+  for (const [index, block] of blocks.entries()) {
+    if (block.kind === "subhead") {
+      book.y -= 10;
+      write(book, block.text, book.faces.heavy, 15, 20, INK, measure);
+      book.y -= 4;
+      continue;
+    }
+    if (block.kind === "pullQuote") {
+      book.y -= 6;
+      need(book, 40);
+      fullRule(book, 2.4);
+      book.y -= 8;
+      write(book, `“${block.text}”`, book.faces.bold, 14, 20, INK, measure);
+      book.y -= 4;
+      fullRule(book, 0.6);
+      book.y -= 12;
+      continue;
+    }
+    const end = write(book, block.text, book.faces.regular, BODY, BODY_LEADING, INK, measure);
+    if (index === lastParagraph) {
+      // The end mark: a small marigold square after the last word.
+      book.page.drawRectangle({
+        x: end.x + 4,
+        y: end.y,
+        width: 6,
+        height: 6,
+        color: MARIGOLD,
+        borderColor: INK,
+        borderWidth: 0.5,
+      });
+    }
+    book.y -= 8;
+  }
+
+  if (sheet.intent.treatment === "screening" && planned?.videoUrl) drawQr(book, planned.videoUrl);
+  if (planned) {
+    book.y -= 10;
+    need(book, 30);
+    book.page.drawRectangle({ x: book.left, y: book.y, width: book.width, height: 0.6, color: RULE });
+    book.y -= 10;
+    write(
+      book,
+      `${wordsFetched(shortDate(issue.createdAt))} ${host ? `Original: ${host}` : ""}`.trim(),
+      book.faces.regular,
+      9,
+      13,
+      MUTED,
+    );
   }
 }
 
-function drawQr(book: Book, url: string, folio: string) {
+/** Quire's note: labelled, upright, in a soft marigold box, so it is never the author's words. */
+function drawNote(book: Book, text: string) {
+  const lines = wrap(book.faces.regular, text, 11, book.width - 24);
+  const height = 16 + 16 + lines.length * 16 + 10;
+  need(book, height + 10);
+  book.page.drawRectangle({
+    x: book.left,
+    y: book.y - height,
+    width: book.width,
+    height,
+    color: MARIGOLD_SOFT,
+    borderColor: RULE,
+    borderWidth: 0.6,
+  });
+  book.y -= 12;
+  write(book, takeLabel, book.faces.bold, 10, 16, INK, book.width - 24, book.left + 12);
+  for (const line of lines) {
+    book.page.drawText(line, { x: book.left + 12, y: book.y - 11, size: 11, font: book.faces.regular, color: INK });
+    book.y -= 16;
+  }
+  book.y -= 22;
+}
+
+function drawQr(book: Book, url: string) {
   const { data, size } = qrMatrix(url);
   const cell = 2.4;
   const qr = size * cell;
-  need(book, qr + 16, folio);
+  need(book, qr + 16);
   book.y -= 8;
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
@@ -405,24 +466,20 @@ function drawQr(book: Book, url: string, folio: string) {
   book.y -= qr + 12;
 }
 
-async function drawFigure(book: Book, url: string, folio: string, caption?: string, credit?: string) {
+async function drawFigure(book: Book, url: string, caption?: string, credit?: string) {
   const image = await tryEmbed(book.doc, url);
   if (!image) return;
-  const maxH = 180;
-  const scale = Math.min(book.width / image.width, maxH / image.height);
+  // Whole, never cropped, and never larger than it helps.
+  const maxH = 200;
+  const scale = Math.min(book.width / image.width, maxH / image.height, 1);
   const w = image.width * scale;
   const h = image.height * scale;
-  need(book, h + 16, folio);
-  book.page.drawImage(image, {
-    x: book.left,
-    y: book.y - h,
-    width: w,
-    height: h,
-  });
-  book.y -= h + 10;
-  if (caption) write(book, caption, book.faces.sans, 8, 11, MUTED);
-  if (credit) write(book, credit, book.faces.sans, 8, 11, MUTED);
-  book.y -= 6;
+  need(book, h + 16);
+  book.page.drawImage(image, { x: book.left, y: book.y - h, width: w, height: h });
+  book.y -= h + 8;
+  const line = [caption, credit].filter(Boolean).join(" ");
+  if (line) write(book, line, book.faces.regular, 9, 13, MUTED);
+  book.y -= 10;
 }
 
 async function tryEmbed(doc: PDFDocument, url: string): Promise<PDFImage | null> {

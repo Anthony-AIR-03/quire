@@ -111,3 +111,29 @@ describe("plain text strips tags", () => {
     expect(plainText("")).toBe("");
   });
 });
+
+describe("the author's words read cleanly", () => {
+  it("drops citation markers and the gaps inline tags leave", () => {
+    const words = extractArticleWords(
+      `<article><h1>Dewey</h1>
+        <p>The <b>Dewey Decimal Classification</b> ( <b>DDC</b> ) is a <a href="/wiki/System">system</a>, used in libraries.<sup class="reference"><a href="#cite-1">[1]</a></sup> It was first published in 1876. [ 2 ]</p>
+      </article>`,
+      "https://example.com/dewey",
+    );
+    expect(words.paragraphs[0]).toBe(
+      "The Dewey Decimal Classification (DDC) is a system, used in libraries. It was first published in 1876.",
+    );
+  });
+
+  it("credits a figure only from its own cite, never a reference further down", () => {
+    const words = extractArticleWords(
+      `<article><h1>Dewey</h1>
+        <figure><img src="https://images.example/shelf.jpg"><figcaption>A shelf</figcaption></figure>
+        <p>The shelves are numbered.</p>
+        <ol class="references"><li><cite>Introduction to the Dewey Decimal Classification (PDF)</cite></li></ol>
+      </article>`,
+      "https://example.com/dewey",
+    );
+    expect(words.figureCredit ?? "").not.toMatch(/Introduction to the Dewey/);
+  });
+});
