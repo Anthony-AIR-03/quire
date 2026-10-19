@@ -46,6 +46,9 @@ export const Route = createRootRoute({
       links: [
         { rel: "stylesheet", href: appCss },
         { rel: "icon", type: "image/svg+xml", href: favicon },
+        // Home-screen icons (docs/brand/tools/build-icons.cjs), served before the owner gate.
+        { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+        { rel: "manifest", href: "/site.webmanifest" },
       ],
     };
   },
