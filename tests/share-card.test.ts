@@ -36,3 +36,34 @@ describe("link previews", () => {
     expect(isOpenPath("/login")).toBe(true);
   });
 });
+
+describe("app icons", () => {
+  const size = (file: string) => {
+    const png = readFileSync(`public/${file}`);
+    return [png.readUInt32BE(16), png.readUInt32BE(20)];
+  };
+
+  it("ships the home-screen icons from the Q mark, and a manifest that names them", () => {
+    expect(size("apple-touch-icon.png")).toEqual([180, 180]);
+    expect(size("icon-192.png")).toEqual([192, 192]);
+    expect(size("icon-512.png")).toEqual([512, 512]);
+    expect(size("icon-maskable-512.png")).toEqual([512, 512]);
+    const manifest = JSON.parse(readFileSync("public/site.webmanifest", "utf8"));
+    expect(manifest.name).toBe("Quire");
+    expect(manifest.start_url).toBe("/");
+    expect(manifest.background_color).toBe("#F7F2DF");
+    expect(manifest.icons.map((icon: { src: string; purpose: string }) => `${icon.src} ${icon.purpose}`)).toEqual([
+      "/icon-192.png any",
+      "/icon-512.png any",
+      "/icon-maskable-512.png maskable",
+    ]);
+    for (const icon of manifest.icons) expect(existsSync(`public${icon.src}`)).toBe(true);
+  });
+
+  it("links them from every page", () => {
+    const root = readFileSync("src/routes/__root.tsx", "utf8");
+    expect(root).toContain('{ rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }');
+    expect(root).toContain('{ rel: "manifest", href: "/site.webmanifest" }');
+    expect(existsSync("docs/brand/tools/build-icons.cjs")).toBe(true);
+  });
+});
