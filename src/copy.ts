@@ -11,6 +11,15 @@ export const bindLine = "Bind the issue.";
 export const dek =
   "For one reader who likes to keep articles for calm later reading. New Quire. Not a patch on quire-bind.";
 
+/** Link previews (og / twitter cards). */
+export const shareTitle = "Quire: a personal press for one reader";
+
+export const shareDescription =
+  "Keep the articles you mean to read and bind them into your own newspaper, set for calm, dyslexia-friendly reading.";
+
+export const shareImageAlt =
+  "Quire's front page: the blackletter nameplate, \"Keep the articles you mean to read. Bind them into your own newspaper.\"";
+
 export const emptyState = "Nothing kept yet. Paste a link above to keep it.";
 
 export const keepHint = "One owner. Your pile stays yours.";

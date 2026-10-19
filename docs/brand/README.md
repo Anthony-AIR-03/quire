@@ -14,6 +14,7 @@ describes how the app implements it once the build is finished.
 | `../../PRODUCT.md` | Product facts the design is built on (Impeccable's product record). |
 | `kit/` | Final artwork (SVG): nameplate, masthead, Q mark, app icon, favicon, ribbon, Oxford rule. |
 | `tools/build-kit.cjs` | Regenerates every SVG in `kit/` from the outlined nameplate. `node tools/build-kit.cjs` |
+| `tools/build-og.cjs` | Builds the link-preview image `public/og-image.png` (1200 × 630) from the fonts and the nameplate outline, all text outlined. `npm install --no-save opentype.js sharp`, then `node docs/brand/tools/build-og.cjs`. |
 | `tools/outline-text.cjs` | Turns text into an outlined SVG path (used to make the nameplate). Needs `opentype.js`. |
 | `tools/nameplate-outline.svg`, `tools/q-outline.svg` | Outlined sources `build-kit.cjs` reads, so rebuilding does not need the font. |
 | `tools/nameplate-specimen.html`, `tools/phone-preview.html`, `tools/phone-one.html` | The blackletter comparison (needs the candidate TTFs in `tools/fonts/`, not committed), and phone-width previews of the mockup. |
