@@ -41,6 +41,8 @@ It adds owner sign-in, self-hosting with Postgres, bookmarks, and a new design.
   follows you from your laptop to your phone. The Press shows how far you got in each issue.
 - **Print this issue:** the same issue as a PDF on A4 or letter.
 - **Owner only:** one account, created from the environment on first start. Sign-up is closed.
+- **Share and install:** a link to Quire shows a Sunday Bundle preview card, and on a phone's home
+  screen Quire has its own Q mark icon.
 
 ## The design: the Sunday Bundle
 
